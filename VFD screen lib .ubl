@@ -1,8 +1,8 @@
 module 'VFD screen lib '
-author shaoyuea
+author shaoyue
 version 1 0 
-description ''
-variables test _vfd_clk _vfd_data _vfd_en _vfd_cs _vfd_length _vfd_brightness 
+description 'VFD 显示屏 6位 8位 12位'
+variables _vfd_clk _vfd_data _vfd_en _vfd_cs _vfd_length _vfd_brightness 
 
   spec ' ' 'VFD_WriteStr' 'VFD_text _ _' 'num str' 0 'text'
   spec ' ' 'VFD_WriteUserFont' 'VFD_custom_font _ _' 'num auto' 0 10
@@ -13,9 +13,9 @@ variables test _vfd_clk _vfd_data _vfd_en _vfd_cs _vfd_length _vfd_brightness
   spec ' ' 'VFD_clear' 'VFD_clear'
   spec ' ' '_VFD_scroll_text' 'VFD_scroll_text _ _' 'str auto' 'text scroll' 200
   spec ' ' '_VFDpinInit' '_VFD_pin_init _ _ _ _' 'auto auto auto auto' 12 13 14 15
-  spec ' ' 'myBlock' 'VFD_Screen_test'
+  spec ' ' 'myBlock' 'VFD_screen_test'
   spec ' ' '_VFD_turn' '_VFD_turn _' 'bool' true
-  spec ' ' '_vfd_set_brightness' '_vfd_set_brightness _' 'num' 30
+  spec ' ' '_vfd_set_brightness' '_VFD_set_brightness _' 'num' 30
 
 to VFD_WriteStr pos text {
   digitalWriteOp _vfd_cs false
@@ -126,4 +126,6 @@ to spi_write_data foo {
     digitalWriteOp _vfd_clk true
   }
 }
+
+
 
