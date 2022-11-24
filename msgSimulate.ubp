@@ -1,0 +1,251 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables myMsg _bar_pos 
+
+script 99 45 {
+whenStarted
+_bar_pos = 6
+'[display:mbDisplay]' 15237440
+waitMillis 500
+'[display:mbDisplayOff]'
+}
+
+script 255 89 {
+whenButtonPressed 'A'
+sendBroadcast '_buttonA'
+waitMillis 50
+sendBroadcast '_ts_buttonA'
+}
+
+script 445 89 {
+whenButtonPressed 'B'
+sendBroadcast '_buttonB'
+waitMillis 50
+sendBroadcast '_ts_buttonB'
+}
+
+script 653 103 {
+whenCondition (digitalReadOp 13)
+sendBroadcast '_progressBar_down'
+waitMillis 50
+sendBroadcast '_ts_progressBar_down'
+waitUntil (not (digitalReadOp 13))
+}
+
+script 443 282 {
+whenBroadcastReceived '_buttonB'
+displayCharacter 'B'
+waitMillis 500
+'[display:mbDisplayOff]'
+}
+
+script 278 283 {
+whenBroadcastReceived '_buttonA'
+displayCharacter 'A'
+waitMillis 500
+'[display:mbDisplayOff]'
+}
+
+script 645 283 {
+whenCondition (digitalReadOp 12)
+sendBroadcast '_progressBar_up'
+waitMillis 50
+sendBroadcast '_ts_progressBar_up'
+waitUntil (not (digitalReadOp 12))
+}
+
+script 65 317 {
+whenBroadcastReceived '_tm_buttonA'
+sendBroadcast '_buttonA'
+}
+
+script 51 405 {
+whenBroadcastReceived '_tm_buttonB'
+sendBroadcast '_buttonB'
+}
+
+script 297 426 {
+whenBroadcastReceived '_progressBar_up'
+_bar_pos += -1
+sayIt _bar_pos
+'[display:mbPlot]' 3 _bar_pos
+}
+
+script 516 453 {
+forever {
+  sayIt (getLastBroadcast)
+}
+}
+
+script 69 492 {
+whenBroadcastReceived '_tm_progressBar_up'
+sendBroadcast '_progressBar_up'
+}
+
+script 301 572 {
+whenBroadcastReceived '_progressBar_down'
+sayIt _bar_pos
+'[display:mbUnplot]' 3 _bar_pos
+_bar_pos += 1
+}
+
+script 45 576 {
+whenBroadcastReceived '_tm_progressBar_down'
+sendBroadcast '_progressBar_down'
+}
+
+
+module 'Button Events' Input
+author MicroBlocks
+version 1 0 
+tags event button double long press 
+description 'Provides blocks to detect press, long press and double press events on buttons.'
+variables _buttons 
+
+  spec 'r' 'button double pressed' 'button _ double pressed' 'auto' 'A'
+  spec 'r' 'button long pressed' 'button _ long pressed' 'auto' 5
+  spec 'r' 'button pressed' 'button _ pressed' 'auto' 5
+  spec 'r' '_button' '_button _' 'auto' 10
+  spec ' ' '_updateButtons' '_updateButtons'
+  spec 'r' '_read button' '_read button _' 'auto' 10
+
+to '_button' 'pin or name' {
+  '_updateButtons'
+  for 'each button' _buttons {
+    if ((at 1 (v 'each button')) == (v 'pin or name')) {return (v 'each button')}
+  }
+  comment 'This button has not been initialized. Let''s add it.'
+  local 'new button' ('[data:makeList]' (v 'pin or name') '' '' 'waiting')
+  '[data:addLast]' (v 'new button') _buttons
+  return (v 'new button')
+}
+
+to '_read button' 'pin or name' {
+  if ((v 'pin or name') == 'A') {
+    return (buttonA)
+  } ((v 'pin or name') == 'B') {
+    return (buttonB)
+  } else {
+    return (digitalReadOp (v 'pin or name'))
+  }
+}
+
+to '_updateButtons' {
+  if (_buttons == 0) {_buttons = ('[data:makeList]')}
+  for button _buttons {
+    local 'currently pressed' ('_read button' (at 1 button))
+    local 'previous state' (at 4 button)
+    if (and ((v 'previous state') == 'waiting') (v 'currently pressed')) {
+      comment 'save state change time'
+      atPut 2 button (millisOp)
+      atPut 3 button (v 'currently pressed')
+      atPut 4 button 'pressed'
+    } (and ((v 'previous state') == 'pressed') (not (v 'currently pressed'))) {
+      local 'press time' ((millisOp) - (at 2 button))
+      comment 'There''s been a press. Let''s check how long it was.'
+      if ((v 'press time') > 500) {
+        atPut 4 button 'long press'
+      } ((v 'press time') > 250) {
+        atPut 4 button 'single press'
+      } else {
+        comment 'This is an internal intermediate state.
+It could turn out to be a single press or a double press.'
+        atPut 2 button (millisOp)
+        atPut 4 button 'short press'
+      }
+    } (and ((v 'previous state') == 'short press') (v 'currently pressed')) {
+      atPut 4 button 'double press'
+    } (and (and ((v 'previous state') == 'short press') (not (v 'currently pressed'))) (((millisOp) - (at 2 button)) > 250)) {
+      atPut 4 button 'single press'
+    } (and ((v 'previous state') == 'double press handled') (not (v 'currently pressed'))) {
+      comment 'We only go back to "waiting" after a double press if the event has been handled
+and the user has released the button. Otherwise we''ll cause false "single press"
+positives.'
+      atPut 4 button 'waiting'
+    }
+  }
+}
+
+to 'button double pressed' 'pin or name' {
+  local 'button' ('_button' (v 'pin or name'))
+  local 'state' (at 4 button)
+  if (state == 'double press') {
+    comment 'We only go back to "waiting" after a double press if the event has been handled
+and the user has released the button. Otherwise we''ll cause false "single press"
+positives.'
+    atPut 4 button 'double press handled'
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
+}
+
+to 'button long pressed' 'pin or name' {
+  local 'button' ('_button' (v 'pin or name'))
+  local 'state' (at 4 button)
+  if (state == 'long press') {
+    atPut 4 button 'waiting'
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
+}
+
+to 'button pressed' 'pin or name' {
+  local 'button' ('_button' (v 'pin or name'))
+  local 'state' (at 4 button)
+  if (state == 'single press') {
+    atPut 4 button 'waiting'
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
+}
+
+
+module 'LED Display' Output
+author MicroBlocks
+version 1 4 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
+variables _stop_scrolling_text 
+
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
+
+to displayCharacter s {
+  s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
+to scroll_text text optionalDelay {
+  text = ('[data:join]' text '')
+  delay = 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  _stop_scrolling_text = (booleanConstant false)
+  local 'length' (size text)
+  for position ((length * 6) + 6) {
+    if _stop_scrolling_text {return 0}
+    for i length {
+      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+    }
+    waitMillis delay
+  }
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  '[display:mbDisplayOff]'
+}
+
