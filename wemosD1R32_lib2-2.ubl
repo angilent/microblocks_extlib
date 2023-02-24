@@ -1,5 +1,5 @@
 module 'wemosD1R32_lib2-2'
-author 邵悦
+author '邵悦'
 version 1 0 
 choices analogPinMenu '0' '1' '2' '3' '4' '5' 
 choices digitalPinMenu '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' 
@@ -46,6 +46,7 @@ to '_wr32_init_pins' {
   _wr32_pin_D13 = 18
   _wr32_analog_pins_list = ('[data:makeList]' _wr32_pin_A0 _wr32_pin_A1 _wr32_pin_A2 _wr32_pin_A3 _wr32_pin_A4 _wr32_pin_A5)
   _wr32_digital_pins_list = ('[data:makeList]' _wr32_pin_D2 _wr32_pin_D3 _wr32_pin_D4 _wr32_pin_D5 _wr32_pin_D6 _wr32_pin_D7 _wr32_pin_D8 _wr32_pin_D9 _wr32_pin_D10 _wr32_pin_D11 _wr32_pin_D12 _wr32_pin_D13)
+  _wr32_initialized = (booleanConstant true)
 }
 
 to rotary pin {
