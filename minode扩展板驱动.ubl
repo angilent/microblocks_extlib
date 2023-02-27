@@ -46,9 +46,9 @@ to rgbWrite r g b pin {
   local '_gg' (g >> 1)
   local '_bb' (b >> 1)
   local 'rgb' (hexToInt '808080')
-  rgb = (rgb | (g << 15))
-  rgb = (rgb | (r << 7))
-  rgb = (rgb | b)
+  rgb = (rgb | (_gg << 15))
+  rgb = (rgb | (_rr << 7))
+  rgb = (rgb | _bb)
   repeat 32 {
     dataWrite false
     clkWrite true
