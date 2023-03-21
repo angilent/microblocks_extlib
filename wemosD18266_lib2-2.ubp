@@ -1,0 +1,666 @@
+module main
+author unknown
+version 1 0 
+choices analogPinMenu '0' 
+choices digitalPinMenu '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' 
+description ''
+variables _wr32_pin_A0 _wr32_pin_A3 _wr32_pin_A4 _wr32_pin_D2 _wr32_pin_D3 _wr32_pin_D4 _wr32_pin_D5 _wr32_pin_D6 _wr32_pin_D7 _wr32_pin_D8 _wr32_pin_D9 _wr32_initialized _wr32_pin_A5 _wr32_pin_D10 _wr32_pin_D11 _wr32_pin_D12 _wr32_pin_D13 _wr32_pin_list _wr32_analog_pins_list _wr32_digital_pins_list 
+
+  spec 'r' 'Button Pin D' 'button pin D _' 'num' 2
+  spec 'r' '_wr32 read analog A' 'wr8266 read analog A _' 'menu.analogPinMenu' 0
+  spec ' ' '_wr32_init_pins' '_wr8266_init_pins'
+  spec 'r' 'rotary' 'rotary pin A _' 'menu.analogPinMenu' 0
+  spec 'r' 'wr32 read digital D' 'wr8266 read digital D _' 'menu.digitalPinMenu' 2
+  spec ' ' 'wr32 set digital pin D' 'wr8266 set digital pin D _ to _' 'menu.digitalPinMenu bool' 2 true
+  spec ' ' 'wr32 set pin D' 'wr8266 set pin D _ to _ (0-1023)' 'menu.digitalPinMenu num' '2' 100
+  spec 'r' 'wr32_GPIOPin_A' 'wr8266_GPIO_A _' 'menu.analogPinMenu' 0
+  spec 'r' 'wr32_GPIO_D' 'wr8266_GPIO_D _' 'menu.digitalPinMenu' 2
+
+to 'Button Pin D' pin {
+  return ('wr32 read digital D' pin)
+}
+
+to '_wr32 read analog A' pin {
+  return (analogReadOp (wr32_GPIOPin_A pin))
+}
+
+to '_wr32_init_pins' {
+  if _wr32_initialized {return}
+  _wr32_pin_A0 = 2
+  _wr32_pin_D2 = 0
+  _wr32_pin_D3 = 1
+  _wr32_pin_D4 = 2
+  _wr32_pin_D5 = 3
+  _wr32_pin_D6 = 4
+  _wr32_pin_D7 = 5
+  _wr32_pin_D8 = 6
+  _wr32_pin_D9 = 7
+  _wr32_pin_D10 = 8
+  _wr32_pin_D11 = 7
+  _wr32_pin_D12 = 6
+  _wr32_pin_D13 = 5
+  _wr32_analog_pins_list = ('[data:makeList]' _wr32_pin_A0)
+  _wr32_digital_pins_list = ('[data:makeList]' _wr32_pin_D2 _wr32_pin_D3 _wr32_pin_D4 _wr32_pin_D5 _wr32_pin_D6 _wr32_pin_D7 _wr32_pin_D8 _wr32_pin_D9 _wr32_pin_D10 _wr32_pin_D11 _wr32_pin_D12 _wr32_pin_D13)
+}
+
+to rotary pin {
+  return ('_wr32 read analog A' pin)
+}
+
+to 'wr32 read digital D' pin {
+  return (digitalReadOp (wr32_GPIO_D pin))
+}
+
+to 'wr32 set digital pin D' pin value {
+  digitalWriteOp (wr32_GPIO_D pin) value
+}
+
+to 'wr32 set pin D' pin value {
+  analogWriteOp (wr32_GPIO_D pin) value
+}
+
+to wr32_GPIOPin_A pin {
+  '_wr32_init_pins'
+  comment 'only 1ADC'
+  return 0
+}
+
+to wr32_GPIO_D pin {
+  '_wr32_init_pins'
+  comment 'pins D2~D13,D2 is list 1  '
+  return (at (pin - 1) _wr32_digital_pins_list)
+}
+
+script 264 34 ('_wr32 read analog A' 0)
+
+script 448 34 {
+'_wr32_init_pins'
+}
+
+script 587 34 (rotary 0)
+
+script 715 34 (at 1 _wr32_analog_pins_list)
+
+script 39 59 ('wr32 read digital D' '7')
+
+script 264 82 ('wr32 read digital D' 2)
+
+script 439 82 {
+printIt ('_wr32 read analog A' 0)
+}
+
+script 763 103 {
+printIt ('_wr32 read analog A' '0')
+}
+
+script 170 116 {
+'_wr32_init_pins'
+}
+
+script 450 119 ('button pressed' 5)
+
+script 300 137 (analogReadOp 0)
+
+script 57 147 (digitalReadOp 14)
+
+script 517 167 ('wr32 read digital D' 2)
+
+script 884 167 (v foo)
+
+script 229 171 {
+'wr32 set pin D' '2' 600
+}
+
+script 295 213 (wr32_GPIO_D 2)
+
+script 762 214 {
+sayIt ('button pressed' (wr32_GPIO_D 2))
+}
+
+script 428 238 {
+'wr32 set digital pin D' 2 true
+}
+
+script 106 249 {
+digitalWriteOp 2 true
+}
+
+script 356 274 {
+whenCondition ('Button Pin D' 2)
+'wr32 set digital pin D' 6 false
+}
+
+script 494 276 (0 + 2)
+
+script 690 276 {
+to 'wr32 set digital pin D' {}
+}
+
+script 690 276 {
+to 'wr32 set digital pin D' {}
+}
+
+script 1027 276 ('Button Pin D' 2)
+
+script 164 290 {
+digitalWriteOp 2 false
+}
+
+script 56 327 {
+digitalWriteOp 7 true
+}
+
+script 183 359 {
+'wr32 set pin D' '2' 1000
+}
+
+script 41 381 {
+digitalWriteOp 7 false
+}
+
+script 688 400 {
+to 'wr32 read digital D' {}
+}
+
+script 265 413 (wr32_GPIOPin_A 3)
+
+script 434 417 (wr32_GPIO_D 5)
+
+script 107 426 {
+digitalWriteOp 4 true
+}
+
+script 264 526 {
+to '_wr32_init_pins' {}
+}
+
+script 37 692 ('wr32 read digital D' 2)
+
+script 34 835 (wr32_GPIO_D 2)
+
+script 300 1095 (v _wr32_digital_pins_list)
+
+script 517 1116 {
+'_wr32_init_pins'
+}
+
+script 358 1126 (digitalReadOp 0)
+
+script 287 1176 {
+'wr32 set pin D' nil 100
+}
+
+script 507 1190 (analogReadOp 0)
+
+script 264 1229 {
+to wr32_GPIO_D {}
+}
+
+script 539 1259 (wr32_GPIOPin_A 0)
+
+script 591 1302 {
+'_wr32_init_pins'
+}
+
+script 264 1368 {
+to wr32_GPIOPin_A {}
+}
+
+script 466 1394 {
+'wr32 set pin D' nil 100
+}
+
+script 440 1447 {
+'wr32 set pin D' nil 100
+}
+
+script 264 1485 {
+to 'wr32 set pin D' {}
+}
+
+script 576 1566 (wr32_GPIO_D nil)
+
+script 264 1577 {
+to '_wr32 read analog A' {}
+}
+
+
+module 'Button Events' Input
+author MicroBlocks
+version 1 0 
+tags event button double long press 
+description 'Provides blocks to detect press, long press and double press events on buttons.'
+variables _buttons 
+
+  spec 'r' 'button double pressed' 'button _ double pressed' 'auto' 'A'
+  spec 'r' 'button long pressed' 'button _ long pressed' 'auto' 5
+  spec 'r' 'button pressed' 'button _ pressed' 'auto' 5
+  spec 'r' '_button' '_button _' 'auto' 10
+  spec ' ' '_updateButtons' '_updateButtons'
+  spec 'r' '_read button' '_read button _' 'auto' 10
+
+to '_button' 'pin or name' {
+  '_updateButtons'
+  for 'each button' _buttons {
+    if ((at 1 (v 'each button')) == (v 'pin or name')) {return (v 'each button')}
+  }
+  comment 'This button has not been initialized. Let''s add it.'
+  local 'new button' ('[data:makeList]' (v 'pin or name') '' '' 'waiting')
+  '[data:addLast]' (v 'new button') _buttons
+  return (v 'new button')
+}
+
+to '_read button' 'pin or name' {
+  if ((v 'pin or name') == 'A') {
+    return (buttonA)
+  } ((v 'pin or name') == 'B') {
+    return (buttonB)
+  } else {
+    return (digitalReadOp (v 'pin or name'))
+  }
+}
+
+to '_updateButtons' {
+  if (_buttons == 0) {_buttons = ('[data:makeList]')}
+  for button _buttons {
+    local 'currently pressed' ('_read button' (at 1 button))
+    local 'previous state' (at 4 button)
+    if (and ((v 'previous state') == 'waiting') (v 'currently pressed')) {
+      comment 'save state change time'
+      atPut 2 button (millisOp)
+      atPut 3 button (v 'currently pressed')
+      atPut 4 button 'pressed'
+    } (and ((v 'previous state') == 'pressed') (not (v 'currently pressed'))) {
+      local 'press time' ((millisOp) - (at 2 button))
+      comment 'There''s been a press. Let''s check how long it was.'
+      if ((v 'press time') > 500) {
+        atPut 4 button 'long press'
+      } ((v 'press time') > 250) {
+        atPut 4 button 'single press'
+      } else {
+        comment 'This is an internal intermediate state.
+It could turn out to be a single press or a double press.'
+        atPut 2 button (millisOp)
+        atPut 4 button 'short press'
+      }
+    } (and ((v 'previous state') == 'short press') (v 'currently pressed')) {
+      atPut 4 button 'double press'
+    } (and (and ((v 'previous state') == 'short press') (not (v 'currently pressed'))) (((millisOp) - (at 2 button)) > 250)) {
+      atPut 4 button 'single press'
+    } (and ((v 'previous state') == 'double press handled') (not (v 'currently pressed'))) {
+      comment 'We only go back to "waiting" after a double press if the event has been handled
+and the user has released the button. Otherwise we''ll cause false "single press"
+positives.'
+      atPut 4 button 'waiting'
+    }
+  }
+}
+
+to 'button double pressed' 'pin or name' {
+  local 'button' ('_button' (v 'pin or name'))
+  local 'state' (at 4 button)
+  if (state == 'double press') {
+    comment 'We only go back to "waiting" after a double press if the event has been handled
+and the user has released the button. Otherwise we''ll cause false "single press"
+positives.'
+    atPut 4 button 'double press handled'
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
+}
+
+to 'button long pressed' 'pin or name' {
+  local 'button' ('_button' (v 'pin or name'))
+  local 'state' (at 4 button)
+  if (state == 'long press') {
+    atPut 4 button 'waiting'
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
+}
+
+to 'button pressed' 'pin or name' {
+  local 'button' ('_button' (v 'pin or name'))
+  local 'state' (at 4 button)
+  if (state == 'single press') {
+    atPut 4 button 'waiting'
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
+}
+
+
+module 'HTTP client' Comm
+author MicroBlocks
+version 1 4 
+depends WiFi 
+tags http network get post put delete 
+choices requestTypes GET POST PUT DELETE 
+description 'Send HTTP requests and get responses back. You can use this library to fetch or store data in online servers, or to control other Wifi-enabled boards.
+'
+
+  spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
+  spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
+  spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
+  spec 'r' '_http_header' '_header _ of response _' 'auto auto' 'content-length' ''
+  spec 'r' '_http_status' '_status of response _' 'auto' ''
+  spec 'r' '_line_end' '_line_end'
+  spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
+  spec 'r' '_request_url' '_request_url _ method _ body _ : port _' 'str menu.requestTypes str num' '' 'GET' '' 80
+  spec 'r' '_readHTTPResponse' '_readHTTPResponse'
+  spec 'r' 'http܃//' 'http܃// _  : port _' 'auto num' 'microblocks.fun/example.txt' 80
+  spec ' ' 'request' '_ data _ to http܃// _  : port _' 'menu.requestTypes str str num' 'POST' 'MicroBlocks is fun' 'microblocks.fun' 80
+
+to '_http_body_start' response {
+  return (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) response) + 4)
+}
+
+to '_http_header' header response {
+  local 'header text' ('_http_header_text' response)
+  header = ('_lowercase' header)
+  repeatUntil ((size (v 'header text')) < 3) {
+    local 'key' ('[data:copyFromTo]' (v 'header text') 1 (('[data:find]' ':' (v 'header text')) - 1))
+    if (('_lowercase' key) == header) {
+      return ('[data:copyFromTo]' (v 'header text') (('[data:find]' ':' (v 'header text')) + 2) (('[data:find]' ('_line_end') (v 'header text')) - 1))
+    }
+    'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('_line_end') (v 'header text')) + 2))
+  }
+  return (booleanConstant false)
+}
+
+to '_http_header_text' response {
+  local 'headersStart' (('[data:find]' ('_line_end') response) + 2)
+  return ('[data:copyFromTo]' response headersStart (('_http_body_start' response) + 2))
+}
+
+to '_http_status' response {
+  return (('[data:copyFromTo]' ('_http_status_text' response) 1 4) + 0)
+}
+
+to '_http_status_text' response {
+  return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('_line_end') response))
+}
+
+to '_line_end' {
+  return ('[data:unicodeString]' ('[data:makeList]' 13 10))
+}
+
+to '_lowercase' string {
+  local 'lowercased' ''
+  local 'char code' ''
+  for c (size string) {
+    'char code' = ('[data:unicodeAt]' c string)
+    if (and ((v 'char code') >= 65) ((v 'char code') <= 90)) {
+      'char code' = ((v 'char code') + 32)
+    }
+    lowercased = ('[data:join]' lowercased ('[data:unicodeString]' (v 'char code')))
+  }
+  return lowercased
+}
+
+to '_readHTTPResponse' {
+  local 'response' ''
+  local 'lastChunkTime' (millisOp)
+  repeatUntil (not ('[net:httpIsConnected]')) {
+    local 'chunk' ('[net:httpResponse]')
+    if ((size chunk) > 0) {
+      response = ('[data:join]' response chunk)
+      lastChunkTime = (millisOp)
+    } (((millisOp) - lastChunkTime) > 10000) {
+      return response
+    }
+    waitMillis 20
+  }
+  response = ('[data:join]' response ('[net:httpResponse]'))
+  return response
+}
+
+to '_request_url' url method body optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 3) {
+    port = optionalPort
+  }
+  local 'host' ''
+  local 'path' ''
+  local 'slashPosition' ('[data:find]' '/' url)
+  if (slashPosition > 0) {
+    host = ('[data:copyFromTo]' url 1 (slashPosition - 1))
+    path = ('[data:copyFromTo]' url (slashPosition + 1))
+  } else {
+    host = url
+  }
+  if (('[net:wifiStatus]') != 'Connected') {
+    return ('[data:join]' '0 Not Connected' ('_line_end'))
+  }
+  '[net:httpConnect]' host port
+  if (not ('[net:httpIsConnected]')) {
+    return ('[data:join]' '0 Could not connect to server' ('_line_end'))
+  }
+  '[net:httpRequest]' method host path
+  return ('_readHTTPResponse')
+}
+
+to 'http܃//' url optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 1) {
+    port = optionalPort
+  }
+  local 'response' ('_request_url' url 'GET' '' port)
+  if (response != '') {
+    if (('_http_status' response) == 200) {
+      return ('[data:copyFromTo]' response ('_http_body_start' response))
+    } else {
+      return ('_http_status_text' response)
+    }
+  } else {
+    return 'Failed to get response'
+  }
+}
+
+to request method data url optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 3) {
+    port = optionalPort
+  }
+  local 'response' ('_request_url' url method data port)
+  if (response != '') {
+    local 'status' ('_http_status' response)
+    local 'body start' ('_http_body_start' response)
+    if (and (200 == status) ((v 'body start') > 0)) {
+      sayIt ('[data:copyFromTo]' response (v 'body start'))
+    } else {
+      sayIt ('_http_status_text' response)
+    }
+  } else {
+    sayIt 'Failed to get response'
+  }
+}
+
+
+module 'Temperature Humidity (DHT11, DHT22)' Input
+author MicroBlocks
+version 1 2 
+tags sensor dht11 dht22 temperature humidity 
+description 'Support for the DHT11 and DHT22 environmental sensors. These sensors provide temperature and humidity readings.'
+variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime 
+
+  spec 'r' 'temperature_DHT11' 'temperature (Celsius) DHT11 pin _' 'auto' 4
+  spec 'r' 'humidity_DHT11' 'humidity DHT11 pin _' 'auto' 4
+  spec 'r' 'temperature_DHT22' 'temperature (Celsius) DHT22 pin _' 'auto' 4
+  spec 'r' 'humidity_DHT22' 'humidity DHT22 pin _' 'auto' 4
+  spec ' ' '_dhtReadData' '_dhtReadData pin _' 'auto any' 4
+  spec 'r' '_dhtChecksumOkay' '_dhtChecksumOkay' 'any'
+  spec ' ' '_dhtUpdate' '_dhtUpdate _ isDHT11 _' 'auto bool any' 4 true
+  spec 'r' '_dhtReady' '_dhtReady' 'any'
+
+to '_dhtChecksumOkay' {
+  if (not (isType _dhtData 'list')) {return (booleanConstant false)}
+  local 'checksum' 0
+  for i 4 {
+    checksum += (at i _dhtData)
+  }
+  checksum = (checksum & 255)
+  return (checksum == (at 5 _dhtData))
+}
+
+to '_dhtReadData' pin {
+  comment 'Create DHT data array the first time'
+  if (_dhtData == 0) {
+    _dhtData = (newList 5)
+  }
+  comment 'fill with 1''s set checksum will be bad if read fails'
+  atPut 'all' _dhtData 1
+  comment 'Pull pin low for >18msec to request data'
+  digitalWriteOp pin false
+  waitMillis 20
+  local 'useDHTPrimitive' (booleanConstant true)
+  if useDHTPrimitive {
+    result = ('[sensors:readDHT]' pin)
+    if ((booleanConstant false) != result) {
+      _dhtData = result
+    }
+    return 0
+  }
+  comment 'Read DHT start pulses (H L H L)'
+  waitUntil (digitalReadOp pin)
+  waitUntil (not (digitalReadOp pin))
+  waitUntil (digitalReadOp pin)
+  waitUntil (not (digitalReadOp pin))
+  local 'i' 1
+  local 'byte' 0
+  local 'bit' 1
+  comment 'Read 40 bits (5 bytes)'
+  repeat 40 {
+    waitUntil (digitalReadOp pin)
+    local 'start' (microsOp)
+    waitUntil (not (digitalReadOp pin))
+    if (((microsOp) - start) > 40) {
+      comment 'Long pulse - append a "1" bit'
+      byte += 1
+    }
+    if (bit == 8) {
+      atPut i _dhtData byte
+      i += 1
+      byte = 0
+      bit = 1
+    } else {
+      byte = (byte << 1)
+      bit += 1
+    }
+    waitUntil (not (digitalReadOp pin))
+  }
+}
+
+to '_dhtReady' {
+  local 'elapsed' ((millisOp) - _dhtLastReadTime)
+  return (or (elapsed < 0) (elapsed > 2000))
+}
+
+to '_dhtUpdate' pin isDHT11 {
+  if ('_dhtReady') {
+    _dht_temperature = 0
+    _dht_humidity = 0
+    '_dhtReadData' pin
+    _dhtLastReadTime = (millisOp)
+  }
+  if ('_dhtChecksumOkay') {
+    if isDHT11 {
+      _dht_temperature = (at 3 _dhtData)
+      _dht_humidity = (at 1 _dhtData)
+    } else {
+      local 'n' (((at 1 _dhtData) * 256) + (at 2 _dhtData))
+      _dht_humidity = ((n + 5) / 10)
+      n = ((((at 3 _dhtData) & 127) * 256) + (at 4 _dhtData))
+      if (((at 3 _dhtData) & 128) != 0) {
+        n = (0 - n)
+      }
+      _dht_temperature = ((n + 5) / 10)
+    }
+  }
+}
+
+to humidity_DHT11 pin {
+  '_dhtUpdate' pin true
+  return _dht_humidity
+}
+
+to humidity_DHT22 pin {
+  '_dhtUpdate' pin false
+  return _dht_humidity
+}
+
+to temperature_DHT11 pin {
+  '_dhtUpdate' pin true
+  return _dht_temperature
+}
+
+to temperature_DHT22 pin {
+  '_dhtUpdate' pin false
+  return _dht_temperature
+}
+
+
+module WiFi Comm
+author MicroBlocks
+version 1 5 
+tags communication network 
+description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
+
+  spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+  spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec 'r' 'getIPAddress' 'IP address'
+  spec 'r' '[net:myMAC]' 'MAC address'
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to wifiConnect ssid password fixedIP gatewayIP subnetIP {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
+  if ((pushArgCount) < 5) {
+    '[net:startWiFi]' ssid password
+  } else {
+    '[net:startWiFi]' ssid password false fixedIP gatewayIP subnetIP
+  }
+  local 'startMSecs' (millisOp)
+  repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
+    comment 'Timeout after N seconds'
+    if (((millisOp) - startMSecs) > 10000) {
+      sayIt 'Could not connect'
+      return 0
+    }
+    comment 'Slow blink while trying to connect'
+    setUserLED true
+    waitMillis 300
+    setUserLED false
+    waitMillis 300
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:startWiFi]' ssid password true
+  if ('Connected' != ('[net:wifiStatus]')) {
+    sayIt 'Could not create hotspot'
+    return 0
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
