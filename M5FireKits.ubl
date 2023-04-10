@@ -1,0 +1,55 @@
+module M5FireKits
+author 'Shao Yue'
+version 1 0 
+tags M5Fire 
+choices portAPinMenu '22' '21'
+choices portBPinMenu '36' '26'
+choices portCPinMenu '17' '16'
+description 'M5Core Fire kits pinout
+PortA Red 21/22 
+PortB Black 26/36
+PortC Blue 16/17
+Mic 34
+RGB LED 15'
+
+  spec 'r' 'MicPin34' 'MicPin34'
+  spec 'r' 'LEDLightPin15' 'LEDLightPin15'
+  spec 'r' 'PortA' 'PortA _' 'menu.portAPinMenu' 22
+  spec 'r' 'PortB' 'PortB _' 'menu.portBPinMenu' 36
+  spec 'r' 'PortC' 'PortC _' 'menu.portCPinMenu' 17
+
+to LEDLightPin15 {
+  return 15
+}
+
+to MicPin34 {
+  return 34
+}
+
+to PortA Pin {
+  comment 'PortA 21/22 红色 I2C'
+  if (Pin == 21) {
+    return 21
+  } else {
+    return 22
+  }
+}
+
+to PortB Pin {
+  comment 'PortB 26/36 黑色 GPIO'
+  if (Pin == 26) {
+    return 26
+  } else {
+    return 36
+  }
+}
+
+to PortC Pin {
+  comment 'PortC 16/17 蓝色 UART'
+  if (Pin == 16) {
+    return 16
+  } else {
+    return 17
+  }
+}
+
