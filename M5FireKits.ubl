@@ -1,29 +1,33 @@
-module M5FireKits
+module M5FireKits Input
 author 'Shao Yue'
 version 1 0 
 depends NeoPixel 
 tags m5fire 
 description 'M5Core Fire kits pinout
+button C 37
+NeoPixel RGB LED 15
+IRTxPin 13
+Mic 34
 PortA Red 21/22 
 PortB Black 26/36
 PortC Blue 16/17
-Mic 34
-RGB LED 15
 '
 variables _m5go_init_flag _np_pixels 
 
-  spec 'r' 'MicPin34' '_MicPin34'
+  spec 'r' 'buttonC' 'buttonC'
   spec 'r' 'LEDLightPin15' 'LEDStripPin15'
+  spec 'r' 'IRPin' 'IRTxPin'
+  spec 'r' 'readMicValue' 'readMicValue'
   spec 'r' 'PortA' 'PortA _' 'auto' 22
   spec 'r' 'PortB' 'PortB _' 'auto' 36
   spec 'r' 'PortC' 'PortC _' 'auto' 17
-  spec 'r' 'IRPin' 'IRTxPin'
-  spec ' ' '_m5go_init' '_m5go_init'
+  space
   spec ' ' 'clearStrip' 'clearStrip'
   spec ' ' 'setStripLED' 'setStripLED _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
   spec ' ' 'setStripRight' 'setStripRight _ _ _ _ _' 'color color color color color'
   spec ' ' 'setStripLeft' 'setStripLeft _ _ _ _ _' 'color color color color color'
-  spec 'r' 'readMicValue' 'readMicValue'
+  spec ' ' '_m5go_init' '_m5go_init'
+  spec 'r' 'MicPin34' '_MicPin34'
 
 to IRPin {
   comment 'm5go 底座红外发射 13'
@@ -50,7 +54,8 @@ to PortA Pin {
 }
 
 to PortB Pin {
-  comment 'm5go 底座 PortB 26/36 黑色 GPIO'
+  comment 'm5go 底座 PortB 26/36 黑色 GPIO
+36 只能做输入'
   if (Pin == 26) {
     return 26
   } else {
@@ -60,10 +65,10 @@ to PortB Pin {
 
 to PortC Pin {
   comment 'm5go 底座 PortC 16/17 蓝色 UART'
-  if (Pin == 16) {
-    return 16
-  } else {
+  if (Pin == 17) {
     return 17
+  } else {
+    return 16
   }
 }
 
@@ -71,6 +76,10 @@ to '_m5go_init' {
   if _m5go_init_flag {return 0}
   neoPixelAttach 10 (LEDLightPin15)
   _m5go_init_flag = (booleanConstant true)
+}
+
+to buttonC {
+  return (not (digitalReadOp 37))
 }
 
 to clearStrip {
