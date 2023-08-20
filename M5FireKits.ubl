@@ -10,7 +10,7 @@ IRTxPin 13
 Mic 34
 PortA Red 21/22 
 PortB Black 26/36
-PortC Blue 16/17
+PortC Blue 17/16
 '
 variables _m5go_init_flag _np_pixels 
 
@@ -20,7 +20,7 @@ variables _m5go_init_flag _np_pixels
   spec 'r' 'readMicValue' 'readMicValue'
   spec 'r' 'PortA' 'PortA _' 'auto' 22
   spec 'r' 'PortB' 'PortB _' 'auto' 36
-  spec 'r' 'PortC' 'PortC _' 'auto' 17
+  spec 'r' 'PortC' 'PortC _' 'auto' 16
   space
   spec ' ' 'clearStrip' 'clearStrip'
   spec ' ' 'setStripLED' 'setStripLED _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
@@ -64,7 +64,7 @@ to PortB Pin {
 }
 
 to PortC Pin {
-  comment 'm5go 底座 PortC 16/17 蓝色 UART'
+  comment 'm5go 底座 PortC 17/16 蓝色 UART'
   if (Pin == 17) {
     return 17
   } else {
