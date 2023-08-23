@@ -28,6 +28,7 @@ variables _m5go_init_flag _np_pixels
   spec ' ' 'setStripLeft' 'setStripLeft _ _ _ _ _' 'color color color color color'
   spec ' ' '_m5go_init' '_m5go_init'
   spec 'r' 'MicPin34' '_MicPin34'
+  spec ' ' 'Screen' 'Screen _' 'bool' true
 
 to IRPin {
   comment 'm5go 底座红外发射 13'
@@ -72,9 +73,14 @@ to PortC Pin {
   }
 }
 
+to Screen foo {
+  digitalWriteOp 32 foo
+}
+
 to '_m5go_init' {
   if _m5go_init_flag {return 0}
   neoPixelAttach 10 (LEDLightPin15)
+  Screen true
   _m5go_init_flag = (booleanConstant true)
 }
 
