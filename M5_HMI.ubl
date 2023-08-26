@@ -1,7 +1,7 @@
 module M5_HMI
 author ShaoYue
 version 1 0 
-tags M5Stack 
+tags m5stack 
 description 'HMI Module with Encoder and 500mAh Battery
  (STM32F030)'
 
@@ -15,7 +15,6 @@ description 'HMI Module with Encoder and 500mAh Battery
   spec 'r' 'HMI_FwVersion' 'HMI_FwVersion'
   spec ' ' 'HMI_resetCounter' 'HMI_resetCounter'
   spec ' ' 'HMI_setLed' 'HMI_setLed _ _' 'auto bool' 1 true
-
 
 to HMI_ButtonA {
   return (0 == (i2cGet (hexToInt '41') (hexToInt '21')))

@@ -9,9 +9,9 @@ NeoPixel RGB LED 15
 IRTxPin 13
 Mic 34
 PortA Red 21/22 
-PortB Black 26/36
+PortB Black 26/36 36 input only
 PortC Blue 17/16
-'
+视频说明：https://www.bilibili.com/video/BV1Za4y1G7MZ/'
 variables _m5go_init_flag _np_pixels 
 
   spec 'r' 'buttonC' 'buttonC'

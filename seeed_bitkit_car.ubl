@@ -1,17 +1,20 @@
 module seeed_bitkit_car
-author unknown
+author ShaoYue
 version 1 0 
-description ''
+description 'https://www.seeedstudio.com/Grove-Zero-Car-Kit-V2-0-p-4351.html
+
+https://www.bilibili.com/video/BV15u411D7DQ/
+'
 variables _zc_LED_init_ linefollowPosition 
 
-	spec ' ' 'set motor speed' 'set motor speed left _ right _' 'num num' 10 10
-	spec ' ' 'Chassis go' 'chassis go _ at _' 'auto auto' 'forward' 10
-	spec ' ' 'Chassis stop' 'chassis stop'
-	spec 'r' 'lineposition' 'lineposition'
-	spec ' ' 'myBlock' 'setAllLEDs _' 'color'
-	spec ' ' 'clearLEDs' 'clearLEDs'
-	spec 'r' 'linecolor' 'linecolor'
-	spec ' ' 'setLed' 'setLED _ with _' 'num color' 1
+  spec ' ' 'set motor speed' 'set motor speed left _ right _' 'num num' 10 10
+  spec ' ' 'Chassis go' 'chassis go _ at _' 'auto auto' 'forward' 10
+  spec ' ' 'Chassis stop' 'chassis stop'
+  spec 'r' 'lineposition' 'lineposition'
+  spec ' ' 'myBlock' 'setAllLEDs _' 'color'
+  spec ' ' 'clearLEDs' 'clearLEDs'
+  spec 'r' 'linecolor' 'linecolor'
+  spec ' ' 'setLed' 'setLED _ with _' 'num color' 1
 
 to 'Chassis go' direction speed {
   if (direction == 'forward') {

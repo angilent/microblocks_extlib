@@ -1,7 +1,8 @@
 module minodeRGB 'My Blocks'
 author '邵悦'
 version 1 0 
-description 'RBG LED light in mi:node kits'
+description 'RBG LED light in mi:node kits
+https://www.bilibili.com/video/BV1rD4y137SL/'
 
   spec ' ' 'minodeRGB r' 'minodeRGB r _ g _ b _ clkpin _ datapin _' 'num num num auto auto' 255 0 0 3 4
   spec ' ' 'minodeRGB' 'minodeRGB _ clkpin _ datapin _' 'color auto auto' nil 3 4
