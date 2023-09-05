@@ -1,0 +1,946 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables _bmpWidth _toneLoopOverhead _8bit_alpha_index px _bmpHeight _cubeInit _toneNoteNames _8bit_buffer py _bmpIsRGB565 _stop_scrolling_text _tonePin _8bit_palette _bmpLine _toneArezzoNotes cube1 _8bit_scale _bmpPalette _toneFrequencies digitalpart1 _bmpBPP _bmpPixelsOffset _toneInitalized log _bmpCompression c1 c2 c3 c4 CCC DigIndexColor ten 
+
+  spec 'r' 'rotate_90' 'rotate_90 _' 'auto'
+  spec ' ' 'DD' 'DD _ _ _' 'auto auto auto' '10' '10' '10'
+  spec ' ' 'DD0' 'DD0 _ _' 'num num' 0 0
+  spec ' ' 'DD1' 'DD1 _ _' 'auto auto' '10' 10
+  spec ' ' 'DD2' 'DD2 _ _' 'auto auto' 0 0
+  spec ' ' 'DD3' 'DD3 _ _' 'auto auto' 0 0
+  spec ' ' 'DD4' 'DD4 _ _' 'auto auto' 0 0
+  spec ' ' 'DD5' 'DD5 _ _' 'auto auto' 0 0
+  spec ' ' 'DD6' 'DD6 _ _' 'num num' 0 0
+  spec ' ' 'DD7' 'DD7 _ _' 'auto auto' 0 0
+  spec ' ' 'DD8' 'DD8 _ _' 'num num' 0 0
+  spec ' ' 'DD9' 'DD9 _ _' 'auto auto' 0 0
+  spec ' ' 'DDC' 'DDC _ _' 'auto auto' '10' '10'
+  spec ' ' 'DDinit' 'DDinit'
+  spec 'r' 'SrctoByteArray' 'srctoByteArray _ _' 'auto auto' '10' 256
+  spec 'r' 'add1' 'add1 if not zero _' 'auto' '10'
+  spec ' ' 'changeColor' 'changeDColor _' 'auto' '10'
+  spec ' ' 'setColor' 'setColor _' 'num' 0
+  spec ' ' 'setDcolor' 'setDcolor _' 'auto' '10'
+
+to DD foo bar baz {
+  if (foo == 'C') {
+    'set transparent color index _' 1
+    DDC bar baz
+    'set transparent color index _' 0
+  } else {
+    callCustomCommand ('[data:join]' 'DD' foo) ('[data:makeList]' bar baz)
+  }
+  'draw buffer'
+}
+
+to DD0 x y {
+  merge c1 x y
+  merge c2 x y
+  merge c3 x y
+  merge c1 x (y + 16)
+  merge c3 x (y + 16)
+  merge c4 x (y + 16)
+}
+
+to DD1 x y {
+  merge c3 x y
+  merge c3 x (y + 16)
+}
+
+to DD2 x y {
+  merge c2 x y
+  merge c3 x y
+  merge c4 x y
+  merge c1 x (y + 16)
+  merge c4 x (y + 16)
+}
+
+to DD3 x y {
+  merge c2 x y
+  merge c3 x y
+  merge c4 x y
+  merge c3 x (y + 16)
+  merge c4 x (y + 16)
+}
+
+to DD4 x y {
+  merge c1 x y
+  merge c3 x y
+  merge c4 x y
+  merge c3 x (y + 16)
+}
+
+to DD5 x y {
+  merge c1 x y
+  merge c2 x y
+  merge c4 x y
+  merge c3 x (y + 16)
+  merge c4 x (y + 16)
+}
+
+to DD6 x y {
+  merge c1 x y
+  merge c2 x y
+  merge c4 x y
+  merge c1 x (y + 16)
+  merge c3 x (y + 16)
+  merge c4 x (y + 16)
+}
+
+to DD7 x y {
+  merge c2 x y
+  merge c3 x y
+  merge c3 x (y + 16)
+}
+
+to DD8 x y {
+  merge c1 x y
+  merge c2 x y
+  merge c3 x y
+  merge c4 x y
+  merge c1 x (y + 16)
+  merge c3 x (y + 16)
+  merge c4 x (y + 16)
+}
+
+to DD9 x y {
+  merge c1 x y
+  merge c2 x y
+  merge c3 x y
+  merge c4 x y
+  merge c3 x (y + 16)
+  merge c4 x (y + 16)
+}
+
+to DDC x y {
+  merge CCC x y
+  merge CCC x (y + 16)
+}
+
+to DDinit {
+  'set scale _' 5
+  'set palette' ('4 bit palette' 'Win & OS/2')
+  'set transparent color index _' 0
+  digitalpart1 = ('[data:makeList]' 16 (SrctoByteArray '0-196,1-8,0-6,1-12,0-5,1-10,0-19' 256))
+  c4 = ('[data:copyFromTo]' (at 'last' digitalpart1) 1)
+  c4 = ('[data:makeList]' 16 c4)
+  c1 = ('[data:copyFromTo]' (at 'last' (rotate_90 digitalpart1)) 1)
+  c1 = ('[data:makeList]' 16 c1)
+  c2 = ('[data:copyFromTo]' (at 'last' (rotate_90 digitalpart1)) 1)
+  c2 = ('[data:makeList]' 16 c2)
+  c3 = ('[data:copyFromTo]' (at 'last' (rotate_90 digitalpart1)) 1)
+  c3 = ('[data:makeList]' 16 c3)
+  CCC = ('[data:makeList]' 16 ('[data:newByteArray]' 256 0))
+}
+
+to SrctoByteArray foo size {
+  comment '0-196,1-8,0-6,1-12,0-5,1-10,0-19'
+  local 'result' ('[data:newByteArray]' size 0)
+  local 'var' ('[data:split]' foo ',')
+  local 'j' 0
+  local 'num' 0
+  local 'count' 0
+  for i var {
+    num = (at 1 ('[data:split]' i '-'))
+    count = (at 2 ('[data:split]' i '-'))
+    if (num == 0) {
+      j = (j + count)
+    } else {
+      repeat count {
+        j = (j + 1)
+        atPut j result (0 + num)
+      }
+    }
+  }
+  return result
+}
+
+to add1 foo {
+  comment 'change index color by 1'
+  if (foo != 0) {
+    if (foo < 16) {
+      return (foo + 1)
+    } else {
+      return 1
+    }
+  }
+  return 0
+}
+
+to changeColor foo {
+  if (and (isType foo 'list') ((size foo) == 2)) {atPut 2 foo ('[data:asByteArray]' (list_map 'add1' (at 2 foo)))}
+}
+
+to rotate_90 foo {
+  local 'width' (at 1 foo)
+  local 'var' (at 2 foo)
+  local 'temp' 0
+  for i ((width / 2) + 0) {
+    for j ('[data:range]' i (width - i)) {
+      temp = (at (((i - 1) * width) + j) var)
+      atPut (((i - 1) * width) + j) var (at (((width - j) * width) + i) var)
+      atPut (((width - j) * width) + i) var (at (((((width - i) * width) + width) - j) - -1) var)
+      atPut (((((width - i) * width) + width) - j) - -1) var (at (((((j - 1) * width) + width) - i) - -1) var)
+      atPut (((((j - 1) * width) + width) - i) - -1) var temp
+    }
+  }
+  return foo
+}
+
+to setColor foo {
+  if (foo != 0) {return DigIndexColor}
+  return 0
+}
+
+to setDcolor foo {
+  comment 'set index color for sprite'
+  if (and (isType foo 'list') ((size foo) == 2)) {
+    atPut 2 foo ('[data:asByteArray]' (list_map 'setColor' (at 2 foo)))
+  }
+}
+
+script 42 40 {
+whenStarted
+DDinit
+'clear display'
+ten = (booleanConstant false)
+}
+
+script 352 80 {
+DDinit
+}
+
+script 550 113 {
+'set scale _' 3
+}
+
+script 43 173 {
+whenBroadcastReceived 'go!'
+forever {
+  for i ('[data:range]' 0 9) {
+    DD i 10 15
+    waitUntil ten
+    ten = (booleanConstant false)
+    DD 'C' 10 15
+  }
+}
+}
+
+script 303 186 {
+whenBroadcastReceived 'go!'
+forever {
+  for i ('[data:range]' 0 9) {
+    DD i 30 15
+    waitMillis 500
+    DD 'C' 30 15
+  }
+  ten = (booleanConstant true)
+}
+}
+
+script 557 207 {
+whenButtonPressed 'A'
+sendBroadcast 'go!'
+}
+
+script 547 402 {
+whenButtonPressed 'B'
+clearBuffer
+'clear display'
+ten = (booleanConstant false)
+stopAll
+DD 0 10 15
+DD 0 30 15
+}
+
+script 40 527 {
+to DDinit {}
+}
+
+
+module '8 Bit Graphics' Output
+author MicroBlocks
+version 1 2 
+tags graphics 
+choices eightBitPalettes MicroBlocks 'red hues' 'green hues' 'blue hues' grayscale 
+choices fourBitPalettes CGA 'Machintosh II' 'Win & OS/2' MSX 'RISC 2' grayscale 
+description 'Provides a full 8-bit (and lower depth) framework to create retro-looking games and applications.
+
+By combining different scales and bit depths you can adapt your project to work on virtually any board.
+
+It allows reading 8-bit indexed BMP files, color palettes and raw image data exported from GIMP, or creating your own bitmaps by hand as byte arrays.  It also includes a bunch of default 4-bit and 8-bit color palettes.
+
+By using a buffer and bitmap merge operations, you can work with sprites and backgrounds at a reasonably high abstraction level, while achieving a decent framerate.
+'
+variables _8bit_scale _8bit_alpha_index _8bit_buffer _8bit_palette _bmpIsRGB565 _bmpHeight _bmpCompression _bmpWidth _bmpPalette _bmpPixelsOffset _bmpBPP _bmpLine 
+
+  spec ' ' 'set scale _' 'set scale _' 'num' 4
+  spec ' ' 'set transparent color index _' 'set transparent color index _' 'num' 0
+  spec ' ' 'merge' 'merge bitmap _ at _ , _' 'auto num num' '' 10 20
+  spec 'r' 'bitmap from BMP file' 'bitmap from BMP file _' 'auto' '8bit.bmp'
+  spec 'r' 'bitmap from file' 'bitmap of width _ from raw indexed file _' 'num str' 32 'filename.data'
+  spec 'r' 'bitmap' 'bitmap of width _ from string _' 'num str' 7 '0003000003B30003BFB30003B3000003000'
+  spec ' ' 'draw buffer' 'draw buffer : starting at x _ y _ width _ height _' 'num num num num' 10 20 7 7
+  spec ' ' 'clear display' 'clear display'
+  spec ' ' 'set palette' 'set palette _' 'auto' ''
+  spec 'r' 'palette from pal format' 'palette from pal file _' 'auto' 'filename.data.pal'
+  spec 'r' 'palette from BMP file' 'palette from BMP file _' 'auto' '8bit.bmp'
+  spec 'r' '4 bit palette' '4 bit _ palette' 'menu.fourBitPalettes' 'CGA'
+  spec 'r' '8 bit palette' '8 bit _ palette' 'menu.eightBitPalettes' 'MicroBlocks'
+  spec ' ' 'draw palette table' 'draw palette table _' 'auto' ''
+  spec 'r' 'screen width' 'screen width'
+  spec 'r' 'screen height' 'screen height'
+  spec 'r' '_8bit_4bit_CGA palette' '_8bit_4bit_CGA palette'
+  spec 'r' '_8bit_4bit_Machintosh II palette' '_8bit_4bit_Machintosh II palette'
+  spec 'r' '_8bit_4bit_Win & OS/2 palette' '_8bit_4bit_Win & OS/2 palette'
+  spec 'r' '_8bit_4bit_grayscale palette' '_8bit_4bit_grayscale palette'
+  spec 'r' '_8bit_4bit_MSX palette' '_8bit_4bit_MSX palette'
+  spec 'r' '_8bit_4bit_RISC 2 palette' '_8bit_4bit_RISC 2 palette'
+  spec 'r' '_8bit_8bit_grayscale palette' '_8bit_8bit_grayscale palette'
+  spec 'r' '_8bit_8bit_green hues palette' '_8bit_8bit_green hues palette'
+  spec 'r' '_8bit_8bit_red hues palette' '_8bit_8bit_red hues palette'
+  spec 'r' '_8bit_8bit_blue hues palette' '_8bit_8bit_blue hues palette'
+  spec 'r' '_8bit_8bit_MicroBlocks palette' '_8bit_8bit_MicroBlocks palette'
+  spec 'r' '_sqrt _' '_sqrt _' 'num' 10
+  spec 'r' '_bmp_readHeader' '_bmp_readHeader file _' 'str' ''
+  spec ' ' '_bmp_readPalette' '_bmp_readPalette file _' 'auto' ''
+  spec ' ' '_bmp_readLine' '_bmp_readLine file _' 'auto' ''
+  spec 'r' '_bmp_line2indexes' '_bmp_line2indexes'
+  spec 'r' '_bmp_RLEline' '_bmp_readRLELine file _' 'auto' ''
+  spec 'r' '_bmp_readInt16' '_bmp read int16 file _' 'str' ''
+  spec 'r' '_bmp_readInt32' '_bmp read int32 file _' 'str' ''
+  spec ' ' '_bmp_alignLineData' '_bmp_alignLineData file _' 'auto' ''
+
+to '4 bit palette' selector {
+  return (callCustomReporter ('[data:join]' '_8bit_4bit_' selector ' palette'))
+}
+
+to '8 bit palette' selector {
+  return (callCustomReporter ('[data:join]' '_8bit_8bit_' selector ' palette'))
+}
+
+to '_8bit_4bit_CGA palette' {
+  return ('[data:makeList]' 0 170 43520 43690 11141120 11141290 11162880 11184810 5592405 5592575 5635925 5636095 16733525 16733695 16777045 16777215)
+}
+
+to '_8bit_4bit_MSX palette' {
+  return ('[data:makeList]' (hexToInt '0') (hexToInt '010101') (hexToInt '3eb849') (hexToInt '74d07d') (hexToInt '5955e0') (hexToInt '8076f1') (hexToInt 'b95e51') (hexToInt '65dbef') (hexToInt 'db6559') (hexToInt 'ff897d') (hexToInt 'ccc35e') (hexToInt 'ded087') (hexToInt '3aa241') (hexToInt 'b766b5') (hexToInt 'cccccc') (hexToInt 'ffffff'))
+}
+
+to '_8bit_4bit_Machintosh II palette' {
+  return ('[data:makeList]' (hexToInt 'ffffff') (hexToInt 'fcf400') (hexToInt 'ff6400') (hexToInt 'dd0202') (hexToInt 'f10285') (hexToInt '4600a6') (hexToInt 'd5') (hexToInt 'aee9') (hexToInt '1ab90c') (hexToInt '6408') (hexToInt '582800') (hexToInt '917135') (hexToInt 'c1c1c1') (hexToInt '818181') (hexToInt '3e3e3e') (hexToInt '0'))
+}
+
+to '_8bit_4bit_RISC 2 palette' {
+  return ('[data:makeList]' (hexToInt 'ffffff') (hexToInt 'dddddd') (hexToInt 'bdbdbd') (hexToInt '999999') (hexToInt '797979') (hexToInt '535353') (hexToInt '313131') (hexToInt '0') (hexToInt '4299') (hexToInt 'f0f000') (hexToInt 'cd00') (hexToInt 'dd0000') (hexToInt 'f0f0bd') (hexToInt '538900') (hexToInt 'ffbd00') (hexToInt 'bdff'))
+}
+
+to '_8bit_4bit_Win & OS/2 palette' {
+  return ('[data:makeList]' (hexToInt '0') (hexToInt '800000') (hexToInt '8000') (hexToInt '808000') (hexToInt '80') (hexToInt '800080') (hexToInt '8080') (hexToInt 'c0c0c0') (hexToInt '808080') (hexToInt 'ff0000') (hexToInt 'ff00') (hexToInt 'ffff00') (hexToInt 'ff') (hexToInt 'ff00ff') (hexToInt 'ffff') (hexToInt 'ffffff'))
+}
+
+to '_8bit_4bit_grayscale palette' {
+  return ('[data:makeList]' 0 1315860 2105376 2894892 3684408 4539717 5329233 6381921 7434609 8553090 9605778 10658466 11974326 13355979 14935011 16777215)
+}
+
+to '_8bit_8bit_MicroBlocks palette' {
+  return ('[data:join]' ('[data:range]' 0 (hexToInt 'FFFFFF') ((hexToInt 'FFFFFF') / 239)) ('[data:range]' 0 (hexToInt 'FFFFFF') ((hexToInt 'FFFFFF') / 15)))
+}
+
+to '_8bit_8bit_blue hues palette' {
+  return ('[data:range]' 0 255)
+}
+
+to '_8bit_8bit_grayscale palette' {
+  return ('[data:range]' 0 (hexToInt 'FFFFFF') ((hexToInt 'FFFFFF') / 255))
+}
+
+to '_8bit_8bit_green hues palette' {
+  return ('[data:range]' (hexToInt 'FF00') (hexToInt 'FFFF'))
+}
+
+to '_8bit_8bit_red hues palette' {
+  return ('[data:range]' (hexToInt 'FF0000') (hexToInt 'FF00FF'))
+}
+
+to '_bmp_RLEline' filename {
+  local 'result' ('[data:newByteArray]' 0)
+  forever {
+    if ((('[file:readPosition]' filename) & 1) == 1) {file_SkipBytes 1 filename}
+    local 'rle' ('[file:readBytes]' 2 filename)
+    if ((at 1 rle) == 0) {
+      if ((at 2 rle) > 2) {
+        comment 'odd numbers for RL4?'
+        result = ('[data:join]' result ('[file:readBytes]' ((((at 2 rle) * _bmpBPP) + 7) / 8) filename))
+      } else {
+        return result
+      }
+    } else {
+      result = ('[data:join]' result ('[data:newByteArray]' ((((at 1 rle) * _bmpBPP) + 7) / 8) (at 2 rle)))
+    }
+  }
+}
+
+to '_bmp_alignLineData' filename {
+  if (and (_bmpCompression != 1) (_bmpCompression != 2)) {
+    local 'padding' (((32 - ((_bmpWidth * _bmpBPP) % 32)) / 8) % 4)
+    if (padding > 0) {
+      file_SkipBytes padding filename
+    }
+  }
+}
+
+to '_bmp_line2indexes' {
+  local 'mask' ((1 << _bmpBPP) - 1)
+  local 'result' ('[data:newByteArray]' 0)
+  local 'i' 1
+  repeatUntil ((size result) == _bmpWidth) {
+    local 'byte' (at i _bmpLine)
+    local 'b' (8 / _bmpBPP)
+    repeatUntil (or (b < 1) ((size result) == _bmpWidth)) {
+      b += -1
+      result = ('[data:join]' result ('[data:asByteArray]' ((byte >> (_bmpBPP * b)) & mask)))
+    }
+    i += 1
+  }
+  return result
+}
+
+to '_bmp_readHeader' filename {
+  if (('[file:fileSize]' filename) < 0) {
+    sayIt 'File not found: ' filename
+    return (booleanConstant false)
+  }
+  '[file:open]' filename
+  if (or (('[file:fileSize]' filename) < 54) ('BM' != ('[data:join]' '' ('[file:readBytes]' 2 filename)))) {
+    sayIt 'Not a BMP file: ' filename
+    return (booleanConstant false)
+  }
+  file_SkipBytes 8 filename
+  _bmpPixelsOffset = ('_bmp_readInt32' filename)
+  local 'headerSize' ('_bmp_readInt32' filename)
+  _bmpWidth = ('_bmp_readInt32' filename)
+  _bmpHeight = ('_bmp_readInt32' filename)
+  file_SkipBytes 2 filename
+  _bmpBPP = ('_bmp_readInt16' filename)
+  _bmpCompression = ('_bmp_readInt32' filename)
+  if (_bmpCompression > 3) {
+    sayIt ('[data:join]' 'Unsupported compression method: ' _bmpCompression)
+    return (booleanConstant false)
+  }
+  _bmpPalette = 0
+  if (_bmpBPP <= 8) {
+    file_SkipBytes 12 filename
+    local 'palSize' ('_bmp_readInt16' filename)
+    if (palSize == 0) {
+      palSize = (1 << _bmpBPP)
+    }
+    _bmpPalette = (newList palSize)
+    file_SkipBytes (headerSize - 34) filename
+    '_bmp_readPalette' filename
+  } else {
+    _bmpIsRGB565 = (booleanConstant false)
+    if (_bmpCompression == 3) {
+      file_SkipBytes 20 filename
+      comment 'BITFIELD  Red'
+      _bmpIsRGB565 = (('_bmp_readInt32' filename) == (hexToInt 'F800'))
+    }
+  }
+  return (booleanConstant true)
+}
+
+to '_bmp_readInt16' filename {
+  local 'data' ('[file:readBytes]' 2 filename)
+  return (((at 2 data) << 8) | (at 1 data))
+}
+
+to '_bmp_readInt32' filename {
+  local 'data' ('[file:readBytes]' 4 filename)
+  return ((((at 4 data) << 24) | ((at 3 data) << 16)) | (((at 2 data) << 8) | (at 1 data)))
+}
+
+to '_bmp_readLine' filename {
+  if (or (_bmpCompression == 1) (_bmpCompression == 2)) {
+    _bmpLine = ('_bmp_RLEline' filename)
+  } else {
+    _bmpLine = ('[file:readBytes]' (((_bmpWidth * _bmpBPP) + 7) / 8) filename)
+  }
+  if (_bmpBPP < 8) {
+    local 'indexes' ('_bmp_line2indexes')
+    _bmpLine = indexes
+  }
+}
+
+to '_bmp_readPalette' filename {
+  for i (size _bmpPalette) {
+    local 'data' ('[file:readBytes]' 4 filename)
+    local 'color' (((at 3 data) << 16) | (((at 2 data) << 8) | (at 1 data)))
+    atPut i _bmpPalette color
+  }
+}
+
+to '_sqrt _' n {
+  for i n {
+    if ((i * i) >= n) {return i}
+  }
+}
+
+to bitmap width 'bitmap string' {
+  local 'list' ('[data:makeList]')
+  for line ('[data:split]' (v 'bitmap string') ('[data:unicodeString]' 10)) {
+    for bit line {
+      '[data:addLast]' (hexToInt bit) list
+    }
+  }
+  return ('[data:makeList]' width ('[data:asByteArray]' list))
+}
+
+to 'bitmap from BMP file' filename {
+  if (not ('_bmp_readHeader' filename)) {return 0}
+  if (_bmpBPP > 8) {return 1}
+  '[file:setReadPosition]' _bmpPixelsOffset filename
+  local 'buf' ('[data:newByteArray]' 0)
+  repeat (absoluteValue _bmpHeight) {
+    '_bmp_readLine' filename
+    if (_bmpHeight >= 0) {
+      buf = ('[data:join]' _bmpLine buf)
+    } else {
+      buf = ('[data:join]' buf _bmpLine)
+    }
+    '_bmp_alignLineData' filename
+  }
+  return ('[data:makeList]' _bmpWidth buf)
+}
+
+to 'bitmap from file' width 'file name' {
+  '[file:open]' (v 'file name')
+  local 'bitmap' ('[data:newByteArray]' ('[file:fileSize]' (v 'file name')))
+  for i ('[file:fileSize]' (v 'file name')) {
+    atPut i bitmap (at 1 ('[file:readBytes]' 1 (v 'file name')))
+  }
+  '[file:close]' (v 'file name')
+  return ('[data:makeList]' width bitmap)
+}
+
+to 'clear display' {
+  '[display:mbDisplayOff]'
+}
+
+to 'draw buffer' 'region x' 'region y' width height {
+  if (not (isType _8bit_palette 'list')) {_8bit_palette = ('[data:makeList]' '0' 'AA' 'AA00' 'AAAA' 'AA0000' 'AA00AA' 'AA5500' 'AAAAAA' '555555' '5555FF' '55FF55' '55FFFF' 'FF5555' 'FF55FF' 'FFFF55' 'FFFFFF')}
+  if ((pushArgCount) < 1) {
+    '[tft:drawBuffer]' _8bit_buffer _8bit_palette _8bit_scale
+  } else {
+    '[tft:drawBuffer]' _8bit_buffer _8bit_palette _8bit_scale (v 'region x') (v 'region y') width height
+  }
+  waitMicros 500
+}
+
+to 'draw palette table' palette {
+  if (not (isType palette 'list')) {if (isType _8bit_palette 'list') {
+    palette = _8bit_palette
+  } else {
+    return 0
+  }}
+  local 'side' ('_sqrt _' (size palette))
+  local 'width' (('[tft:getWidth]') / side)
+  for y side {
+    for x side {
+      local 'index' (((y - 1) * side) + x)
+      if (index <= (size palette)) {
+        '[tft:rect]' ((x - 1) * width) ((y - 1) * width) width width (at index palette)
+      }
+    }
+  }
+}
+
+to merge bitmap 'origin x' 'origin y' {
+  if (_8bit_scale == 0) {'set scale _' 2}
+  '[tft:mergeBitmap]' (at 2 bitmap) (at 1 bitmap) _8bit_buffer _8bit_scale _8bit_alpha_index (v 'origin x') (v 'origin y')
+}
+
+to 'palette from BMP file' filename {
+  if ('_bmp_readHeader' filename) {return _bmpPalette}
+}
+
+to 'palette from pal format' 'file name' {
+  '[file:open]' (v 'file name')
+  local 'palette' (newList (('[file:fileSize]' (v 'file name')) / 3))
+  for i (('[file:fileSize]' (v 'file name')) / 3) {
+    atPut i palette ((((at 1 ('[file:readBytes]' 1 (v 'file name'))) << 16) | ((at 1 ('[file:readBytes]' 1 (v 'file name'))) << 8)) | (at 1 ('[file:readBytes]' 1 (v 'file name'))))
+  }
+  '[file:close]' (v 'file name')
+  return palette
+}
+
+to 'screen height' {
+  return (('[tft:getHeight]') / _8bit_scale)
+}
+
+to 'screen width' {
+  return (('[tft:getWidth]') / _8bit_scale)
+}
+
+to 'set palette' 'color list' {
+  _8bit_palette = (v 'color list')
+}
+
+to 'set scale _' scale {
+  _8bit_scale = scale
+  _8bit_buffer = ('[data:newByteArray]' (('screen width') * ('screen height')) 0)
+}
+
+to 'set transparent color index _' 'alpha index' {
+  _8bit_alpha_index = (v 'alpha index')
+}
+
+
+module '8bitCube'
+author unknown
+version 0 0 
+description ''
+
+  spec 'r' '_8bit_4bit_pico8 palette' '_8bit_4bit_pico8 palette'
+  spec ' ' 'checkPxPy' 'checkPxPy'
+  spec ' ' 'clearBuffer' 'clearBuffer'
+  spec ' ' 'cubeInit' 'cubeInit'
+  spec ' ' 'drayBar' 'drawBar _' 'auto'
+  spec ' ' 'erase' 'erase _ _' 'auto auto'
+  spec ' ' 'flip' 'flip _ _' 'auto auto'
+  spec ' ' 'flipCubeV' 'flipCubeV'
+  spec ' ' 'flipH' 'flipCubeH'
+  spec ' ' 'moveCube' 'moveCube _' 'auto'
+  spec ' ' 'putCube' 'putCube'
+  spec ' ' 'replay' 'replay'
+  spec ' ' 'setcube' 'setcube _ _' 'auto auto'
+  spec 'r' 'shiftColor' 'shiftColor'
+  spec ' ' 'showpos' 'showPos'
+
+to '_8bit_4bit_pico8 palette' {
+  return ('[data:makeList]' 0 1911635 8267091 34641 11227702 6248271 12764103 16773608 16711757 16753408 16772135 58422 2731519 8615580 16742312 16764074)
+}
+
+to checkPxPy {
+  px = (maximum (minimum (('screen width') - (('screen width') % 8)) px) 0)
+  py = (maximum (minimum (('screen height') - (('screen height') % 8)) py) 0)
+}
+
+to clearBuffer {
+  _8bit_buffer = ('[data:newByteArray]' (('screen width') * ('screen height')) 0)
+}
+
+to cubeInit {
+  if (_cubeInit == 0) {
+    'set palette' ('_8bit_4bit_pico8 palette')
+    'set scale _' 4
+    log = (newList 0)
+    cube1 = (bitmap 8 '0AF999A0A009900A9099990F9999999999999999F0999909A009900A0A999FA0')
+    local 'apple8bit' (bitmap 8 '000880008808008E888888888888888E888888E888888E889888888E098888E0')
+    local '_cube_width' (at 1 cube1)
+    px = 0
+    py = (('screen height') - _cube_width)
+    _cubeInit = 1
+  }
+}
+
+to drayBar foo {
+  for i ('[data:range]' 0 (foo - 1)) {
+    merge cube1 (i * 8) (0 + (i * 4))
+  }
+  'draw buffer'
+}
+
+to erase foo bar {
+  'set transparent color index _' 1
+  merge ('[data:makeList]' _cube_width ('[data:newByteArray]' (_cube_width * _cube_width) 0)) foo bar
+  'set transparent color index _' 0
+}
+
+to flip foo mode {
+  local 'var' (at 2 foo)
+  local 'width' (at 1 foo)
+  if (mode == 'h') {
+    for i width {
+      for j (width / 2) {
+        local 'temp' (at (((i - 1) * width) + j) var)
+        atPut (((i - 1) * width) + j) var (at ((((i - 1) * width) + width) - (j - 1)) var)
+        atPut ((((i - 1) * width) + width) - (j - 1)) var temp
+      }
+    }
+  } else {
+    for i (width / 2) {
+      for j width {
+        temp = (at (((i - 1) * width) + j) var)
+        atPut (((i - 1) * width) + j) var (at (((width - i) * width) + j) var)
+        atPut (((width - i) * width) + j) var temp
+      }
+    }
+  }
+}
+
+to flipCubeV {
+  flip cube1 'v'
+  putCube
+}
+
+to flipH {
+  flip cube1 'h'
+  putCube
+}
+
+to moveCube direction {
+  if (direction == 'up') {
+    py += -8
+    putCube
+  }
+  if (direction == 'down') {
+    py += 8
+    putCube
+  }
+  if (direction == 'left') {
+    px += -16
+    putCube
+  }
+  if (direction == 'right') {
+    px += 16
+    putCube
+  }
+  if (direction == 'sdown') {
+    px += 8
+    py += 4
+    putCube
+  }
+  if (direction == 'sup') {
+    px += -8
+    py += -4
+    putCube
+  }
+}
+
+to putCube {
+  setcube px py
+  'draw buffer'
+  if ((size log) == 0) {
+    '[data:addLast]' ('[data:makeList]' px py) log
+  } (not (and ((at 1 (at 'last' log)) == px) ((at 2 (at 'last' log)) == py))) {
+    '[data:addLast]' ('[data:makeList]' px py) log
+  }
+}
+
+to replay {
+  'clear display'
+  clearBuffer
+  for i (size log) {
+    setcube (at 1 (at i log)) (at 2 (at i log))
+    'draw buffer'
+  }
+}
+
+to setcube x y {
+  cubeInit
+  checkPxPy
+  merge cube1 x y
+}
+
+to shiftColor {
+  local 'var' ('[data:copyFromTo]' (at 2 cube1) 1)
+  for i (size var) {
+    if ((at i var) != 0) {atPut i var ((at i var) + 1)}
+  }
+  return ('[data:makeList]' 16 var)
+}
+
+to showpos {
+  sayIt ('[data:join]' px ',' py)
+  repeat 2 {
+    merge (shiftColor) px py
+    'draw buffer'
+    waitMillis 80
+    merge cube1 px py
+    'draw buffer'
+    waitMillis 50
+  }
+}
+
+
+module Lists Data
+author MicroBlocks
+version 1 0 
+description 'Useful functions for working with lists.'
+
+  spec 'r' 'list_range' 'range _ to _ : by _' 'num num num' 1 10 1
+  spec 'r' 'list_contains' 'list _ contains _' 'auto auto' 'aList' 'cat'
+  space
+  spec 'r' 'list_map' 'map _ over _' 'str.functionNameMenu auto' 'aFunction' 'aList'
+  spec 'r' 'list_filter' 'filter _ with _' 'auto str.functionNameMenu' 'aList' 'aFunction'
+  space
+  spec ' ' 'list_reverse' 'reverse _' 'auto' 'aList'
+  spec ' ' 'list_shuffle' 'shuffle _' 'auto' 'aList'
+  spec ' ' 'list_mergesort' 'sort _' 'auto' 'aList'
+  spec ' ' '_list_mergeStep' '_mergeStep _ _ _ _ _' 'auto num num num auto' 'srcList' 1 2 3 'dstList'
+
+to '_list_mergeStep' src left right end dst {
+  local 'i' left
+  local 'j' right
+  local 'k' left
+  repeatUntil (k > end) {
+    if (and (i < right) (or (j > end) ((at i src) <= (at j src)))) {
+      atPut k dst (at i src)
+      i += 1
+    } else {
+      atPut k dst (at j src)
+      j += 1
+    }
+    k += 1
+  }
+}
+
+to list_contains aList aValue {
+  for item aList {
+    if (aValue == item) {return (booleanConstant true)}
+  }
+  return (booleanConstant false)
+}
+
+to list_filter src selectionFunction {
+  local 'result' ('[data:makeList]')
+  for item src {
+    if (callCustomReporter selectionFunction ('[data:makeList]' item)) {'[data:addLast]' item result}
+  }
+  return result
+}
+
+to list_map aFunction src {
+  local 'result' ('[data:makeList]')
+  for item src {
+    '[data:addLast]' (callCustomReporter aFunction ('[data:makeList]' item)) result
+  }
+  return result
+}
+
+to list_mergesort src {
+  local 'len' (size src)
+  local 'work list' (newList len)
+  local 'width' 1
+  repeatUntil (width >= len) {
+    local 'i' 1
+    repeatUntil (i > len) {
+      '_list_mergeStep' src i (minimum (i + width) len) (minimum (i + ((2 * width) - 1)) len) (v 'work list')
+      i += (2 * width)
+    }
+    comment 'Copy working list into the source list.'
+    for i len {
+      atPut i src (at i (v 'work list'))
+    }
+    width = (2 * width)
+  }
+}
+
+to list_range first last incr {
+  local 'result' ('[data:makeList]')
+  local 'n' first
+  local 'increment' 1
+  if ((pushArgCount) > 2) {
+    increment = incr
+  }
+  if (first <= last) {
+    increment = (absoluteValue increment)
+    repeatUntil (n > last) {
+      '[data:addLast]' n result
+      n += increment
+    }
+  } else {
+    increment = (0 - (absoluteValue increment))
+    repeatUntil (n < last) {
+      '[data:addLast]' n result
+      n += increment
+    }
+  }
+  return result
+}
+
+to list_reverse aList {
+  local 'i' 1
+  local 'j' (size aList)
+  repeatUntil (i >= j) {
+    local 'tmp' (at i aList)
+    atPut i aList (at j aList)
+    atPut j aList tmp
+    i += 1
+    j += -1
+  }
+}
+
+to list_shuffle aList {
+  local 'len' (size aList)
+  for i len {
+    local 'j' (random 1 len)
+    local 'tmp' (at i aList)
+    atPut i aList (at j aList)
+    atPut j aList tmp
+  }
+}
+
+
+module TFT Output
+author MicroBlocks
+version 1 5 
+description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
+
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  space
+  spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+  spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+  spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+  spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+  spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
+  space
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'makeGray' 'gray _ %' 'num' 50
+  spec 'r' 'randomColor' 'random color'
+  space
+  spec 'r' '[tft:getWidth]' 'TFT width'
+  spec 'r' '[tft:getHeight]' 'TFT height'
+  space
+  spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  space
+  spec ' ' '_deferMonochromeDisplayUpdates' '_defer monochrome display updates'
+  spec ' ' '_resumeMonochromeDisplayUpdates' '_resume monochrome display updates'
+
+to '_deferMonochromeDisplayUpdates' {
+  '[tft:deferUpdates]'
+}
+
+to '_resumeMonochromeDisplayUpdates' {
+  '[tft:resumeUpdates]'
+}
+
+to makeColor r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to makeGray percent {
+  gray = ((percent * 255) / 100)
+  gray = (maximum 0 (minimum gray 255))
+  return ((gray << 16) | ((gray << 8) | gray))
+}
+
+to randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
