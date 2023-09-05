@@ -120,7 +120,7 @@ to DDC x y {
 }
 
 to DDinit {
-  'set scale _' 5
+  'set scale _' 4
   'set palette' ('4 bit palette' 'Win & OS/2')
   'set transparent color index _' 0
   digitalpart1 = ('[data:makeList]' 16 (SrctoByteArray '0-196,1-8,0-6,1-12,0-5,1-10,0-19' 256))
@@ -201,61 +201,84 @@ to setDcolor foo {
   }
 }
 
-script 42 40 {
+script 332 33 {
+whenButtonPressed 'A'
+sendBroadcast 'go!'
+}
+
+script 230 42 {
+DDinit
+}
+
+script 54 48 {
 whenStarted
 DDinit
 'clear display'
 ten = (booleanConstant false)
 }
 
-script 352 80 {
-DDinit
+script 675 60 {
+waitUntil ten
+ten = (booleanConstant false)
+DD 'C' ((('screen width') / 2) - 20) ((('screen height') / 2) - 16)
 }
 
-script 550 113 {
-'set scale _' 3
+script 202 92 ('screen width')
+
+script 372 111 {
+DD0 0 0
 }
 
-script 43 173 {
+script 510 132 (('screen width') / 2)
+
+script 368 152 {
+'draw buffer'
+}
+
+script 591 168 {
 whenBroadcastReceived 'go!'
 forever {
   for i ('[data:range]' 0 9) {
-    DD i 10 15
-    waitUntil ten
-    ten = (booleanConstant false)
-    DD 'C' 10 15
-  }
-}
-}
-
-script 303 186 {
-whenBroadcastReceived 'go!'
-forever {
-  for i ('[data:range]' 0 9) {
-    DD i 30 15
+    DD i ((('screen width') / 2) - -4) ((('screen height') / 2) - 16)
     waitMillis 500
-    DD 'C' 30 15
+    DD 'C' ((('screen width') / 2) - -4) ((('screen height') / 2) - 16)
   }
   ten = (booleanConstant true)
 }
 }
 
-script 557 207 {
-whenButtonPressed 'A'
-sendBroadcast 'go!'
+script 234 178 {
+DD i 30 15
 }
 
-script 547 402 {
+script 35 184 {
+whenBroadcastReceived 'go!'
+forever {
+  for i ('[data:range]' 0 9) {
+    DD i ((('screen width') / 2) - 16) ((('screen height') / 2) - 16)
+    waitUntil ten
+    ten = (booleanConstant false)
+    DD 'C' ((('screen width') / 2) - 16) ((('screen height') / 2) - 16)
+  }
+}
+}
+
+script 324 204 {
+DD 'C' 30 15
+}
+
+script 520 418 {
 whenButtonPressed 'B'
+'set scale _' 3
 clearBuffer
 'clear display'
 ten = (booleanConstant false)
 stopAll
-DD 0 10 15
-DD 0 30 15
+DD 0 ((('screen width') / 2) - 16) ((('screen height') / 2) - 16)
+DD 0 ((('screen width') / 2) - -4) ((('screen height') / 2) - 16)
 }
 
-script 40 527 {
+script 33 456 {
 to DDinit {}
 }
 
