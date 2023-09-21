@@ -1,0 +1,167 @@
+module '8bitCube'
+author unknown
+version 0 0 
+description ''
+
+  spec 'r' '_8bit_4bit_pico8 palette' '_8bit_4bit_pico8 palette'
+  spec ' ' 'checkPxPy' 'checkPxPy'
+  spec ' ' 'clearBuffer' 'clearBuffer'
+  spec ' ' 'cubeInit' 'cubeInit'
+  spec ' ' 'drayBar' 'drawBar _' 'auto'
+  spec ' ' 'erase' 'erase _ _' 'auto auto'
+  spec ' ' 'flip' 'flip _ _' 'auto auto'
+  spec ' ' 'flipCubeV' 'flipCubeV'
+  spec ' ' 'flipH' 'flipCubeH'
+  spec ' ' 'moveCube' 'moveCube _' 'auto'
+  spec ' ' 'putCube' 'putCube'
+  spec ' ' 'replay' 'replay'
+  spec ' ' 'setcube' 'setcube _ _' 'auto auto'
+  spec 'r' 'shiftColor' 'shiftColor'
+  spec ' ' 'showpos' 'showPos'
+
+to '_8bit_4bit_pico8 palette' {
+  return ('[data:makeList]' 0 1911635 8267091 34641 11227702 6248271 12764103 16773608 16711757 16753408 16772135 58422 2731519 8615580 16742312 16764074)
+}
+
+to checkPxPy {
+  px = (maximum (minimum (('screen width') - (('screen width') % 8)) px) 0)
+  py = (maximum (minimum (('screen height') - (('screen height') % 8)) py) 0)
+}
+
+to clearBuffer {
+  _8bit_buffer = ('[data:newByteArray]' (('screen width') * ('screen height')) 0)
+}
+
+to cubeInit {
+  if (_cubeInit == 0) {
+    'set palette' ('_8bit_4bit_pico8 palette')
+    'set scale _' 4
+    log = (newList 0)
+    cube1 = (bitmap 8 '0AF999A0A009900A9099990F9999999999999999F0999909A009900A0A999FA0')
+    local 'apple8bit' (bitmap 8 '000880008808008E888888888888888E888888E888888E889888888E098888E0')
+    local '_cube_width' (at 1 cube1)
+    px = 0
+    py = (('screen height') - _cube_width)
+    _cubeInit = 1
+  }
+}
+
+to drayBar foo {
+  for i ('[data:range]' 0 (foo - 1)) {
+    merge cube1 (i * 8) (0 + (i * 4))
+  }
+  'draw buffer'
+}
+
+to erase foo bar {
+  'set transparent color index _' 1
+  merge ('[data:makeList]' _cube_width ('[data:newByteArray]' (_cube_width * _cube_width) 0)) foo bar
+  'set transparent color index _' 0
+}
+
+to flip foo mode {
+  local 'var' (at 2 foo)
+  local 'width' (at 1 foo)
+  if (mode == 'h') {
+    for i width {
+      for j (width / 2) {
+        local 'temp' (at (((i - 1) * width) + j) var)
+        atPut (((i - 1) * width) + j) var (at ((((i - 1) * width) + width) - (j - 1)) var)
+        atPut ((((i - 1) * width) + width) - (j - 1)) var temp
+      }
+    }
+  } else {
+    for i (width / 2) {
+      for j width {
+        temp = (at (((i - 1) * width) + j) var)
+        atPut (((i - 1) * width) + j) var (at (((width - i) * width) + j) var)
+        atPut (((width - i) * width) + j) var temp
+      }
+    }
+  }
+}
+
+to flipCubeV {
+  flip cube1 'v'
+  putCube
+}
+
+to flipH {
+  flip cube1 'h'
+  putCube
+}
+
+to moveCube direction {
+  if (direction == 'up') {
+    py += -8
+    putCube
+  }
+  if (direction == 'down') {
+    py += 8
+    putCube
+  }
+  if (direction == 'left') {
+    px += -16
+    putCube
+  }
+  if (direction == 'right') {
+    px += 16
+    putCube
+  }
+  if (direction == 'sdown') {
+    px += 8
+    py += 4
+    putCube
+  }
+  if (direction == 'sup') {
+    px += -8
+    py += -4
+    putCube
+  }
+}
+
+to putCube {
+  setcube px py
+  'draw buffer'
+  if ((size log) == 0) {
+    '[data:addLast]' ('[data:makeList]' px py) log
+  } (not (and ((at 1 (at 'last' log)) == px) ((at 2 (at 'last' log)) == py))) {
+    '[data:addLast]' ('[data:makeList]' px py) log
+  }
+}
+
+to replay {
+  'clear display'
+  clearBuffer
+  for i (size log) {
+    setcube (at 1 (at i log)) (at 2 (at i log))
+    'draw buffer'
+  }
+}
+
+to setcube x y {
+  cubeInit
+  checkPxPy
+  merge cube1 x y
+}
+
+to shiftColor {
+  local 'var' ('[data:copyFromTo]' (at 2 cube1) 1)
+  for i (size var) {
+    if ((at i var) != 0) {atPut i var ((at i var) + 1)}
+  }
+  return ('[data:makeList]' 16 var)
+}
+
+to showpos {
+  sayIt ('[data:join]' px ',' py)
+  repeat 2 {
+    merge (shiftColor) px py
+    'draw buffer'
+    waitMillis 80
+    merge cube1 px py
+    'draw buffer'
+    waitMillis 50
+  }
+}
+
