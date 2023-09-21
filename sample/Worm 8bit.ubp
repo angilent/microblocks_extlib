@@ -1,0 +1,949 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables worm direction apple _cube_width apple8bit 
+
+  spec ' ' 'move worm' 'move'
+  spec ' ' 'turn right' 'turn right'
+  spec ' ' 'draw apple' 'draw new apple'
+  spec ' ' 'grow worm' 'grow'
+  spec 'r' 'touching apple' 'touching apple'
+  spec ' ' 'new game' 'new game'
+  spec 'r' 'worm contains apple' 'worm contains apple'
+  spec 'r' 'worm should die' 'worm should die'
+  spec ' ' '右转' 'turn left'
+  spec ' ' 'game over' 'game over'
+  spec ' ' 'write' 'write _ centered at scale _ y _ color _' 'str auto auto color' 'Hello!' 3 '10'
+
+to 'draw apple' {
+  comment 'needs to make sure apple is in free spot'
+  apple = ('[data:makeList]' ((random 1 4) * _cube_width) ((random 1 4) * _cube_width))
+  if ('worm contains apple') {
+    repeatUntil (not ('worm contains apple')) {
+      apple = ('[data:makeList]' ((random 1 5) * _cube_width) ((random 1 5) * _cube_width))
+    }
+  }
+  merge apple8bit (at 1 apple) (at 2 apple)
+  'draw buffer'
+}
+
+to 'game over' {
+  '[display:mbDisplayOff]'
+  write 'GAME OVER' (maximum 1 (('[tft:getWidth]') / 60)) (('[tft:getHeight]') / 3) (colorSwatch 218 6 23 255)
+}
+
+to 'grow worm' {
+  local 'tail' (at 1 worm)
+  local 'new worm' ('[data:makeList]' '')
+  sayIt (size (v 'new worm'))
+  waitMillis 500
+  for part worm {
+    '[data:addLast]' part (v 'new worm')
+  }
+  sayIt (size (v 'new worm'))
+  'move worm'
+  atPut 1 (v 'new worm') tail
+  worm = (v 'new worm')
+}
+
+to 'move worm' {
+  local 'head' (at 'last' worm)
+  local 'tail' (at 1 worm)
+  erase (at 1 tail) (at 2 tail)
+  'draw buffer'
+  for index ((size worm) - 1) {
+    atPut index worm (at (index + 1) worm)
+  }
+  atPut 'last' worm ('[data:makeList]' ((at 1 head) + ((at 1 direction) * _cube_width)) ((at 2 head) + ((at 2 direction) * _cube_width)))
+  setcube (at 1 (at 'last' worm)) (at 2 (at 'last' worm))
+  'draw buffer'
+}
+
+to 'new game' {
+  clearBuffer
+  '[display:mbDisplayOff]'
+  worm = ('[data:makeList]' ('[data:makeList]' 16 16))
+  direction = ('[data:makeList]' 1 0)
+}
+
+to 'touching apple' {
+  local 'head' (at 'last' worm)
+  return (and ((at 1 head) == (at 1 apple)) ((at 2 head) == (at 2 apple)))
+}
+
+to 'turn right' {
+  if ((at 1 direction) == 1) {
+    direction = ('[data:makeList]' 0 1)
+  } ((at 2 direction) == 1) {
+    direction = ('[data:makeList]' -1 0)
+  } ((at 1 direction) == -1) {
+    direction = ('[data:makeList]' 0 -1)
+  } else {
+    direction = ('[data:makeList]' 1 0)
+  }
+}
+
+to 'worm contains apple' {
+  for part worm {
+    if (and ((at 1 part) == (at 1 apple)) ((at 2 part) == (at 2 apple))) {return (booleanConstant true)}
+  }
+  return (booleanConstant false)
+}
+
+to 'worm should die' {
+  local 'head' (at 'last' worm)
+  if (or (or ((at 1 head) > ('screen width')) ((at 2 head) > ('screen height'))) (or ((at 1 head) < 0) ((at 2 head) < 0))) {
+    return (booleanConstant true)
+  }
+  for index ((size worm) - 1) {
+    local 'part' (at index worm)
+    if (and ((at 1 part) == (at 1 head)) ((at 2 part) == (at 2 head))) {
+      return (booleanConstant true)
+    }
+  }
+  return (booleanConstant false)
+}
+
+to write text scale y color {
+  local 'width' (((scale * 6) * (size text)) - scale)
+  '[tft:text]' text ((('[tft:getWidth]') - width) / 2) y color scale false
+}
+
+to '右转' {
+  if ((at 1 direction) == 1) {
+    direction = ('[data:makeList]' 0 -1)
+  } ((at 2 direction) == -1) {
+    direction = ('[data:makeList]' -1 0)
+  } ((at 1 direction) == -1) {
+    direction = ('[data:makeList]' 0 1)
+  } else {
+    direction = ('[data:makeList]' 1 0)
+  }
+}
+
+script 35 25 {
+whenStarted
+cubeInit
+cube1 = (bitmap 8 '0AF999A0A009900A9099990F9999999999999999F0999909A009900A0A999FA0')
+apple8bit = (bitmap 8 '000880008808008E888888888888888E888888E888888E889888888E098888E0')
+'new game'
+forever {
+  'draw apple'
+  repeatUntil ('touching apple') {
+    'move worm'
+    waitMillis 300
+    if ('worm should die') {
+      'game over'
+      waitUntil (or (buttonA) (buttonB))
+      'new game'
+    } ((size worm) == 24) {
+      '[display:mbDisplayOff]'
+      write 'YOU WIN' (maximum 1 (('[tft:getWidth]') / 60)) (('[tft:getHeight]') / 3) (colorSwatch 16 218 58 255)
+      waitUntil (or (buttonA) (buttonB))
+      'new game'
+    }
+  }
+  'grow worm'
+}
+}
+
+script 500 30 {
+whenButtonPressed 'A'
+'右转'
+}
+
+script 593 174 {
+'move worm'
+}
+
+script 461 237 {
+whenButtonPressed 'B'
+'turn right'
+}
+
+script 219 247 {
+'draw apple'
+}
+
+script 396 313 {
+whenCondition (not (digitalReadOp 37))
+comment 'm5core button3'
+'draw apple'
+waitUntil (digitalReadOp 37)
+}
+
+script 687 333 {
+'grow worm'
+}
+
+script 645 453 (v worm)
+
+script 427 477 (at 1 worm)
+
+script 534 527 (at 2 worm)
+
+script 60 752 {
+to cubeInit {}
+}
+
+script 555 1032 (newList 0)
+
+script 452 1090 (size 'Rosa')
+
+script 437 1151 (at 2 ('[data:makeList]' '' ''))
+
+script 259 1195 {
+to 'grow worm' {}
+}
+
+
+module '8 Bit Graphics' Output
+author MicroBlocks
+version 1 1 
+tags graphics 
+choices eightBitPalettes MicroBlocks 'red hues' 'green hues' 'blue hues' grayscale 
+choices fourBitPalettes CGA 'Machintosh II' 'Win & OS/2' MSX 'RISC 2' grayscale 
+description 'Provides a full 8-bit (and lower depth) framework to create retro-looking games and applications.
+
+By combining different scales and bit depths you can adapt your project to work on virtually any board.
+
+It allows reading color palettes and raw image data exported from GIMP, or creating your own bitmaps by hand as byte arrays.  It also includes a bunch of default 4-bit and 8-bit color palettes.
+
+By using a buffer and bitmap merge operations, you can work with sprites and backgrounds at a reasonably high abstraction level, while achieving a decent framerate.
+'
+variables _8bit_scale _8bit_alpha_index _8bit_buffer _8bit_palette 
+
+  spec ' ' 'set scale _' 'set scale _' 'num' 4
+  spec ' ' 'set transparent color index _' 'set transparent color index _' 'num' 0
+  spec ' ' 'merge' 'merge bitmap _ at _ , _' 'auto num num' '' 10 20
+  spec 'r' 'bitmap from BMP file' 'bitmap from BMP file _' 'auto' '8bit.bmp'
+  spec 'r' 'bitmap from file' 'bitmap of width _ from raw indexed file _' 'num str' 32 'filename.data'
+  spec 'r' 'bitmap' 'bitmap of width _ from string _' 'num str' 7 '0003000003B30003BFB30003B3000003000'
+  spec ' ' 'draw buffer' 'draw buffer : starting at x _ y _ width _ height _' 'num num num num' 10 20 7 7
+  spec ' ' 'clear display' 'clear display'
+  spec ' ' 'set palette' 'set palette _' 'auto' ''
+  spec 'r' 'palette from pal format' 'palette from pal file _' 'auto' 'filename.data.pal'
+  spec 'r' '4 bit palette' '4 bit _ palette' 'menu.fourBitPalettes' 'CGA'
+  spec 'r' '8 bit palette' '8 bit _ palette' 'menu.eightBitPalettes' 'MicroBlocks'
+  spec ' ' 'draw palette table' 'draw palette table _' 'auto' ''
+  spec 'r' 'screen width' 'screen width'
+  spec 'r' 'screen height' 'screen height'
+  spec 'r' '_8bit_4bit_CGA palette' '_8bit_4bit_CGA palette'
+  spec 'r' '_8bit_4bit_Machintosh II palette' '_8bit_4bit_Machintosh II palette'
+  spec 'r' '_8bit_4bit_Win & OS/2 palette' '_8bit_4bit_Win & OS/2 palette'
+  spec 'r' '_8bit_4bit_grayscale palette' '_8bit_4bit_grayscale palette'
+  spec 'r' '_8bit_4bit_MSX palette' '_8bit_4bit_MSX palette'
+  spec 'r' '_8bit_4bit_RISC 2 palette' '_8bit_4bit_RISC 2 palette'
+  spec 'r' '_8bit_8bit_grayscale palette' '_8bit_8bit_grayscale palette'
+  spec 'r' '_8bit_8bit_green hues palette' '_8bit_8bit_green hues palette'
+  spec 'r' '_8bit_8bit_red hues palette' '_8bit_8bit_red hues palette'
+  spec 'r' '_8bit_8bit_blue hues palette' '_8bit_8bit_blue hues palette'
+  spec 'r' '_8bit_8bit_MicroBlocks palette' '_8bit_8bit_MicroBlocks palette'
+  spec 'r' '_sqrt _' '_sqrt _' 'num' 10
+
+to '4 bit palette' selector {
+  return (callCustomReporter ('[data:join]' '_8bit_4bit_' selector ' palette'))
+}
+
+to '8 bit palette' selector {
+  return (callCustomReporter ('[data:join]' '_8bit_8bit_' selector ' palette'))
+}
+
+to '_8bit_4bit_CGA palette' {
+  return ('[data:makeList]' 0 170 43520 43690 11141120 11141290 11162880 11184810 5592405 5592575 5635925 5636095 16733525 16733695 16777045 16777215)
+}
+
+to '_8bit_4bit_MSX palette' {
+  return ('[data:makeList]' (hexToInt '0') (hexToInt '010101') (hexToInt '3eb849') (hexToInt '74d07d') (hexToInt '5955e0') (hexToInt '8076f1') (hexToInt 'b95e51') (hexToInt '65dbef') (hexToInt 'db6559') (hexToInt 'ff897d') (hexToInt 'ccc35e') (hexToInt 'ded087') (hexToInt '3aa241') (hexToInt 'b766b5') (hexToInt 'cccccc') (hexToInt 'ffffff'))
+}
+
+to '_8bit_4bit_Machintosh II palette' {
+  return ('[data:makeList]' (hexToInt 'ffffff') (hexToInt 'fcf400') (hexToInt 'ff6400') (hexToInt 'dd0202') (hexToInt 'f10285') (hexToInt '4600a6') (hexToInt 'd5') (hexToInt 'aee9') (hexToInt '1ab90c') (hexToInt '6408') (hexToInt '582800') (hexToInt '917135') (hexToInt 'c1c1c1') (hexToInt '818181') (hexToInt '3e3e3e') (hexToInt '0'))
+}
+
+to '_8bit_4bit_RISC 2 palette' {
+  return ('[data:makeList]' (hexToInt 'ffffff') (hexToInt 'dddddd') (hexToInt 'bdbdbd') (hexToInt '999999') (hexToInt '797979') (hexToInt '535353') (hexToInt '313131') (hexToInt '0') (hexToInt '4299') (hexToInt 'f0f000') (hexToInt 'cd00') (hexToInt 'dd0000') (hexToInt 'f0f0bd') (hexToInt '538900') (hexToInt 'ffbd00') (hexToInt 'bdff'))
+}
+
+to '_8bit_4bit_Win & OS/2 palette' {
+  return ('[data:makeList]' (hexToInt '0') (hexToInt '800000') (hexToInt '8000') (hexToInt '808000') (hexToInt '80') (hexToInt '800080') (hexToInt '8080') (hexToInt 'c0c0c0') (hexToInt '808080') (hexToInt 'ff0000') (hexToInt 'ff00') (hexToInt 'ffff00') (hexToInt 'ff') (hexToInt 'ff00ff') (hexToInt 'ffff') (hexToInt 'ffffff'))
+}
+
+to '_8bit_4bit_grayscale palette' {
+  return ('[data:makeList]' 0 1315860 2105376 2894892 3684408 4539717 5329233 6381921 7434609 8553090 9605778 10658466 11974326 13355979 14935011 16777215)
+}
+
+to '_8bit_8bit_MicroBlocks palette' {
+  return ('[data:join]' ('[data:range]' 0 (hexToInt 'FFFFFF') ((hexToInt 'FFFFFF') / 239)) ('[data:range]' 0 (hexToInt 'FFFFFF') ((hexToInt 'FFFFFF') / 15)))
+}
+
+to '_8bit_8bit_blue hues palette' {
+  return ('[data:range]' 0 255)
+}
+
+to '_8bit_8bit_grayscale palette' {
+  return ('[data:range]' 0 (hexToInt 'FFFFFF') ((hexToInt 'FFFFFF') / 255))
+}
+
+to '_8bit_8bit_green hues palette' {
+  return ('[data:range]' (hexToInt 'FF00') (hexToInt 'FFFF'))
+}
+
+to '_8bit_8bit_red hues palette' {
+  return ('[data:range]' (hexToInt 'FF0000') (hexToInt 'FF00FF'))
+}
+
+to '_sqrt _' n {
+  for i n {
+    if ((i * i) >= n) {return i}
+  }
+}
+
+to bitmap width 'bitmap string' {
+  local 'list' ('[data:makeList]')
+  for line ('[data:split]' (v 'bitmap string') ('[data:unicodeString]' 10)) {
+    for bit line {
+      '[data:addLast]' (hexToInt bit) list
+    }
+  }
+  return ('[data:makeList]' width ('[data:asByteArray]' list))
+}
+
+to 'bitmap from BMP file' filename {
+  if (not ('_bmp_readHeader' filename)) {return 0}
+  if (_bmpBPP > 8) {return 1}
+  '[file:setReadPosition]' _bmpPixelsOffset filename
+  local 'buf' ('[data:newByteArray]' 0)
+  repeat (absoluteValue _bmpHeight) {
+    '_bmp_readLine' filename
+    if (_bmpHeight >= 0) {
+      buf = ('[data:join]' _bmpLine buf)
+    } else {
+      buf = ('[data:join]' buf _bmpLine)
+    }
+    '_bmp_alignLineData' filename
+  }
+  return ('[data:makeList]' _bmpWidth buf)
+}
+
+to 'bitmap from file' width 'file name' {
+  '[file:open]' (v 'file name')
+  local 'bitmap' ('[data:newByteArray]' ('[file:fileSize]' (v 'file name')))
+  for i ('[file:fileSize]' (v 'file name')) {
+    atPut i bitmap (at 1 ('[file:readBytes]' 1 (v 'file name')))
+  }
+  '[file:close]' (v 'file name')
+  return ('[data:makeList]' width bitmap)
+}
+
+to 'clear display' {
+  '[display:mbDisplayOff]'
+}
+
+to 'draw buffer' 'region x' 'region y' width height {
+  if (not (isType _8bit_palette 'list')) {_8bit_palette = ('[data:makeList]' '0' 'AA' 'AA00' 'AAAA' 'AA0000' 'AA00AA' 'AA5500' 'AAAAAA' '555555' '5555FF' '55FF55' '55FFFF' 'FF5555' 'FF55FF' 'FFFF55' 'FFFFFF')}
+  if ((pushArgCount) < 1) {
+    '[tft:drawBuffer]' _8bit_buffer _8bit_palette _8bit_scale
+  } else {
+    '[tft:drawBuffer]' _8bit_buffer _8bit_palette _8bit_scale (v 'region x') (v 'region y') width height
+  }
+  waitMicros 500
+}
+
+to 'draw palette table' palette {
+  if (not (isType palette 'list')) {if (isType _8bit_palette 'list') {
+    palette = _8bit_palette
+  } else {
+    return 0
+  }}
+  local 'side' ('_sqrt _' (size palette))
+  local 'width' (('[tft:getWidth]') / side)
+  for y side {
+    for x side {
+      local 'index' (((y - 1) * side) + x)
+      if (index <= (size palette)) {
+        '[tft:rect]' ((x - 1) * width) ((y - 1) * width) width width (at index palette)
+      }
+    }
+  }
+}
+
+to merge bitmap 'origin x' 'origin y' {
+  if (_8bit_scale == 0) {'set scale _' 2}
+  '[tft:mergeBitmap]' (at 2 bitmap) (at 1 bitmap) _8bit_buffer _8bit_scale _8bit_alpha_index (v 'origin x') (v 'origin y')
+}
+
+to 'palette from pal format' 'file name' {
+  '[file:open]' (v 'file name')
+  local 'palette' (newList (('[file:fileSize]' (v 'file name')) / 3))
+  for i (('[file:fileSize]' (v 'file name')) / 3) {
+    atPut i palette ((((at 1 ('[file:readBytes]' 1 (v 'file name'))) << 16) | ((at 1 ('[file:readBytes]' 1 (v 'file name'))) << 8)) | (at 1 ('[file:readBytes]' 1 (v 'file name'))))
+  }
+  '[file:close]' (v 'file name')
+  return palette
+}
+
+to 'screen height' {
+  return (('[tft:getHeight]') / _8bit_scale)
+}
+
+to 'screen width' {
+  return (('[tft:getWidth]') / _8bit_scale)
+}
+
+to 'set palette' 'color list' {
+  _8bit_palette = (v 'color list')
+}
+
+to 'set scale _' scale {
+  _8bit_scale = scale
+  _8bit_buffer = ('[data:newByteArray]' (('screen width') * ('screen height')) 0)
+}
+
+to 'set transparent color index _' 'alpha index' {
+  _8bit_alpha_index = (v 'alpha index')
+}
+
+
+module '8bitCube'
+author 'Shao Yue'
+version 1 0 
+depends 'Graphics and Displays/8 Bit Graphics' 'Graphics and Displays/BMP' 
+description 'MicroBlocks 8 bit cube UI
+   message driven cube move: up down left right sdown(slant down) sup(slant up)
+    moveCube(direction): move the cube step by step
+    showPos: flashing to show the current cube position
+    flipCubeH: horizontally flip the cube
+    flipCubeV: vertically flip the cube
+    replay:  Redraw the graphics on the screen based on the records in the log.
+'
+variables _8bit_buffer cube1 py px log _cubeInit 
+
+  spec ' ' 'clearBuffer' 'clearBuffer'
+  spec ' ' 'setcube' 'setcube _ _' 'auto auto'
+  spec ' ' 'drayBar' 'drawBar _' 'auto'
+  spec 'r' 'shiftColor' 'shiftColor'
+  spec ' ' 'showpos' 'showPos'
+  spec ' ' 'flip' 'flip _ _' 'auto auto' '10' '10'
+  spec ' ' 'checkPxPy' 'checkPxPy'
+  spec ' ' 'putCube' 'putCube'
+  spec ' ' 'flipCubeV' 'flipCubeV'
+  spec ' ' 'flipH' 'flipCubeH'
+  spec ' ' 'replay' 'replay'
+  spec ' ' 'moveCube' 'moveCube _' 'auto' 'up'
+  spec ' ' 'cubeInit' 'cubeInit'
+  spec ' ' 'erase' 'erase _ _' 'auto auto' '10' '10'
+  spec 'r' '_8bit_4bit_pico8 palette' '_8bit_4bit_pico8 palette'
+
+to '_8bit_4bit_pico8 palette' {
+  return ('[data:makeList]' 0 1911635 8267091 34641 11227702 6248271 12764103 16773608 16711757 16753408 16772135 58422 2731519 8615580 16742312 16764074)
+}
+
+to checkPxPy {
+  px = (maximum (minimum (('screen width') - (('screen width') % 8)) px) 0)
+  py = (maximum (minimum (('screen height') - (('screen height') % 8)) py) 0)
+}
+
+to clearBuffer {
+  _8bit_buffer = ('[data:newByteArray]' (('screen width') * ('screen height')) 0)
+}
+
+to cubeInit {
+  if (_cubeInit == 0) {
+    'set palette' ('_8bit_4bit_pico8 palette')
+    'set scale _' 4
+    log = (newList 0)
+    cube1 = (bitmap 8 '0AF999A0A009900A9099990F9999999999999999F0999909A009900A0A999FA0')
+    apple8bit = (bitmap 8 '000880008808008E888888888888888E888888E888888E889888888E098888E0')
+    _cube_width = (at 1 cube1)
+    px = 0
+    py = (('screen height') - _cube_width)
+    _cubeInit = 1
+  }
+}
+
+to drayBar foo {
+  for i ('[data:range]' 0 (foo - 1)) {
+    merge cube1 (i * 8) (0 + (i * 4))
+  }
+  'draw buffer'
+}
+
+to erase foo bar {
+  'set transparent color index _' 1
+  merge ('[data:makeList]' _cube_width ('[data:newByteArray]' (_cube_width * _cube_width) 0)) foo bar
+  'set transparent color index _' 0
+}
+
+to flip foo mode {
+  local 'var' (at 2 foo)
+  if (mode == 'h') {
+    for i 16 {
+      for j 8 {
+        local 'temp' (at (((i - 1) * 16) + j) var)
+        atPut (((i - 1) * 16) + j) var (at ((((i - 1) * 16) + 16) - (j - 1)) var)
+        atPut ((((i - 1) * 16) + 16) - (j - 1)) var temp
+      }
+    }
+  } else {
+    for i 8 {
+      for j 16 {
+        local 'temp' (at (((i - 1) * 16) + j) var)
+        atPut (((i - 1) * 16) + j) var (at (((16 - i) * 16) + j) var)
+        atPut (((16 - i) * 16) + j) var temp
+      }
+    }
+  }
+}
+
+to flipCubeV {
+  comment 'flip cube vertical,change orig cube data'
+  flip cube1 'v'
+  putCube
+}
+
+to flipH {
+  flip cube1 'h'
+  putCube
+}
+
+to moveCube direction {
+  comment 'sdownt: slant down right
+sup: slant up left'
+  if (direction == 'up') {
+    py += -8
+    putCube
+  }
+  if (direction == 'down') {
+    py += 8
+    putCube
+  }
+  if (direction == 'left') {
+    px += -16
+    putCube
+  }
+  if (direction == 'right') {
+    px += 16
+    putCube
+  }
+  if (direction == 'sdown') {
+    px += 8
+    py += 4
+    putCube
+  }
+  if (direction == 'sup') {
+    px += -8
+    py += -4
+    putCube
+  }
+}
+
+to putCube {
+  comment 'flash screen and add log'
+  setcube px py
+  'draw buffer'
+  if ((size log) == 0) {
+    '[data:addLast]' ('[data:makeList]' px py) log
+  } (not (and ((at 1 (at 'last' log)) == px) ((at 2 (at 'last' log)) == py))) {
+    '[data:addLast]' ('[data:makeList]' px py) log
+  }
+}
+
+to replay {
+  comment 'redraw cube in logs
+ingnore cube flip'
+  'clear display'
+  clearBuffer
+  for i (size log) {
+    setcube (at 1 (at i log)) (at 2 (at i log))
+    'draw buffer'
+  }
+}
+
+to setcube x y {
+  cubeInit
+  checkPxPy
+  merge cube1 x y
+}
+
+to shiftColor {
+  local 'var' ('[data:copyFromTo]' (at 2 cube1) 1)
+  for i (size var) {
+    if ((at i var) != 0) {atPut i var ((at i var) + 1)}
+  }
+  return ('[data:makeList]' 16 var)
+}
+
+to showpos {
+  sayIt ('[data:join]' px ',' py)
+  repeat 2 {
+    merge (shiftColor) px py
+    'draw buffer'
+    waitMillis 80
+    merge cube1 px py
+    'draw buffer'
+    waitMillis 50
+  }
+}
+
+
+module BMP Output
+author 'José García Yeste'
+version 2 2 
+depends TFT Files 
+description 'Display BMP files on a TFT screen.
+
+BMP files can be transferred to and from boards with a file systems using the put/get commands in the IDE file menu (available in "show advanced blocks" mode).
+
+Dragging a BMP file over microBlocks also loads the file into the file system.
+
+This library works with uncompressed BMP files with 1, 4, 8, 16, 24 and 32 bits per pixel. v2.0 supports 4 and 8 bit RLE compressed files.
+
+Tested with GIMP, online-convert.com and convert.io generated files.
+
+'
+variables _bmpPalette _bmpIsRGB565 _bmpPixelsOffset _bmpWidth _bmpHeight _bmpBPP _bmpCompression _bmpLine 
+
+  spec ' ' 'drawBMPfile' 'display BMP file _ at x _ y _' 'str num num' 'image.bmp' 0 0
+  space
+  spec 'r' '_bmp_readHeader' '_bmp_readHeader file _' 'str' ''
+  spec ' ' '_bmp_drawBMP' '_bmp_drawBMP file _ x _ y _' 'str num num' '' 0 0
+  spec ' ' '_bmp_drawBMPPixels' '_bmp_drawBMPPixels file _ x _ y _ with function _' 'str num num str' '' 0 0 '[tft:setPixel]'
+  space
+  spec 'r' '_bmp_readPixelLine' '_bmp_readPixelLine file _' 'str' ''
+  spec 'r' '_bmp_16BitPixel' '_bmp_16BitPixel from _ starting at _' 'str num' '' 1
+  spec 'r' '_bmp_24BitPixel' '_bmp_24BitPixel from _ starting at _' 'str num' '' 1
+  spec ' ' '_bmp_readPalette' '_bmp_readPalette file _' 'auto' ''
+  spec ' ' '_bmp_readLine' '_bmp_readLine file _' 'auto' ''
+  spec 'r' '_bmp_line2indexes' '_bmp_line2indexes'
+  spec 'r' '_bmp_RLEline' '_bmp_readRLELine file _' 'auto' ''
+  space
+  spec 'r' '_bmp_readInt16' '_bmp read int16 file _' 'str' ''
+  spec 'r' '_bmp_readInt32' '_bmp read int32 file _' 'str' ''
+  spec ' ' '_bmp_alignLineData' '_bmp_alignLineData file _' 'auto' ''
+
+to '_bmp_16BitPixel' data i {
+  local 'pixel' (((at (i + 1) data) << 8) | (at i data))
+  if _bmpIsRGB565 {
+    local 'r' ((pixel >> 8) & 248)
+    local 'g' ((pixel >> 3) & 248)
+  } else {
+    local 'r' ((pixel >> 7) & 248)
+    local 'g' ((pixel >> 2) & 248)
+  }
+  local 'b' ((pixel & 31) << 3)
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to '_bmp_24BitPixel' data i {
+  return ((((at (i + 2) data) << 16) | ((at (i + 1) data) << 8)) | (at i data))
+}
+
+to '_bmp_RLEline' filename {
+  local 'result' ('[data:newByteArray]' 0)
+  forever {
+    if ((('[file:readPosition]' filename) & 1) == 1) {file_SkipBytes 1 filename}
+    local 'rle' ('[file:readBytes]' 2 filename)
+    if ((at 1 rle) == 0) {
+      if ((at 2 rle) > 2) {
+        comment 'odd numbers for RL4?'
+        result = ('[data:join]' result ('[file:readBytes]' ((((at 2 rle) * _bmpBPP) + 7) / 8) filename))
+      } else {
+        return result
+      }
+    } else {
+      result = ('[data:join]' result ('[data:newByteArray]' ((((at 1 rle) * _bmpBPP) + 7) / 8) (at 2 rle)))
+    }
+  }
+}
+
+to '_bmp_alignLineData' filename {
+  if (and (_bmpCompression != 1) (_bmpCompression != 2)) {
+    local 'padding' (((32 - ((_bmpWidth * _bmpBPP) % 32)) / 8) % 4)
+    if (padding > 0) {
+      file_SkipBytes padding filename
+    }
+  }
+}
+
+to '_bmp_drawBMP' filename originX originY {
+  '[file:setReadPosition]' _bmpPixelsOffset filename
+  if (_bmpHeight >= 0) {
+    local 'y' ((originY + _bmpHeight) - 1)
+    local 'yIncrement' -1
+  } else {
+    local 'y' originY
+    local 'yIncrement' 1
+  }
+  local 'optimize' ((boardType) != 'Boardie')
+  repeat (absoluteValue _bmpHeight) {
+    local 'line' ('_bmp_readPixelLine' filename)
+    if optimize {
+      local 'rep' 1
+      local 'lastColor' (at 1 line)
+      for x (size line) {
+        if ((at x line) != lastColor) {
+          '[tft:line]' ((x - rep) + originX) y ((x - 1) + originX) y lastColor
+          lastColor = (at x line)
+          rep = 1
+        } else {
+          rep += 1
+        }
+      }
+      '[tft:line]' ((x - rep) + originX) y ((x - 1) + originX) y lastColor
+    } else {
+      for x (size line) {
+        '[tft:setPixel]' ((x - 1) + originX) y (at x line)
+      }
+    }
+    y += yIncrement
+  }
+}
+
+to '_bmp_drawBMPPixels' filename originX originY setPixelFunction {
+  comment 'Much slower than _bmp_drawBMP but allows client to supply
+a setPixelFunction, so it can be used to draw a BMP file
+file onto other devices such as a NeoPixel panel.'
+  '[file:setReadPosition]' _bmpPixelsOffset filename
+  if (_bmpHeight >= 0) {
+    local 'y' ((originY + _bmpHeight) - 1)
+    local 'yIncrement' -1
+  } else {
+    local 'y' originY
+    local 'yIncrement' 1
+  }
+  local 'parameters' (newList 3)
+  repeat (absoluteValue _bmpHeight) {
+    local 'line' ('_bmp_readPixelLine' filename)
+    for x (size line) {
+      atPut 1 parameters (originX + (x - 1))
+      atPut 2 parameters y
+      atPut 3 parameters (at x line)
+      callCustomCommand setPixelFunction parameters
+    }
+    y += yIncrement
+  }
+}
+
+to '_bmp_line2indexes' {
+  local 'mask' ((1 << _bmpBPP) - 1)
+  local 'result' ('[data:newByteArray]' 0)
+  local 'i' 1
+  repeatUntil ((size result) == _bmpWidth) {
+    local 'byte' (at i _bmpLine)
+    local 'b' (8 / _bmpBPP)
+    repeatUntil (or (b < 1) ((size result) == _bmpWidth)) {
+      b += -1
+      result = ('[data:join]' result ('[data:asByteArray]' ((byte >> (_bmpBPP * b)) & mask)))
+    }
+    i += 1
+  }
+  return result
+}
+
+to '_bmp_readHeader' filename {
+  if (('[file:fileSize]' filename) < 0) {
+    sayIt 'File not found: ' filename
+    return 'false'
+  }
+  '[file:open]' filename
+  if (or (('[file:fileSize]' filename) < 54) ('BM' != ('[data:join]' '' ('[file:readBytes]' 2 filename)))) {
+    sayIt 'Not a BMP file: ' filename
+    return false
+  }
+  file_SkipBytes 8 filename
+  _bmpPixelsOffset = ('_bmp_readInt32' filename)
+  local 'headerSize' ('_bmp_readInt32' filename)
+  _bmpWidth = ('_bmp_readInt32' filename)
+  _bmpHeight = ('_bmp_readInt32' filename)
+  file_SkipBytes 2 filename
+  _bmpBPP = ('_bmp_readInt16' filename)
+  _bmpCompression = ('_bmp_readInt32' filename)
+  if (_bmpCompression > 3) {
+    sayIt ('[data:join]' 'Unsupported compression method: ' _bmpCompression)
+    return false
+  }
+  _bmpPalette = 0
+  if (_bmpBPP <= 8) {
+    file_SkipBytes 12 filename
+    local 'palSize' ('_bmp_readInt16' filename)
+    if (palSize == 0) {
+      palSize = (1 << _bmpBPP)
+    }
+    _bmpPalette = (newList palSize)
+    file_SkipBytes (headerSize - 34) filename
+    '_bmp_readPalette' filename
+  } else {
+    _bmpIsRGB565 = (booleanConstant false)
+    if (_bmpCompression == 3) {
+      file_SkipBytes 20 filename
+      comment 'BITFIELD  Red'
+      _bmpIsRGB565 = (('_bmp_readInt32' filename) == (hexToInt 'F800'))
+    }
+  }
+  return true
+}
+
+to '_bmp_readInt16' filename {
+  local 'data' ('[file:readBytes]' 2 filename)
+  return (((at 2 data) << 8) | (at 1 data))
+}
+
+to '_bmp_readInt32' filename {
+  local 'data' ('[file:readBytes]' 4 filename)
+  return ((((at 4 data) << 24) | ((at 3 data) << 16)) | (((at 2 data) << 8) | (at 1 data)))
+}
+
+to '_bmp_readLine' filename {
+  if (or (_bmpCompression == 1) (_bmpCompression == 2)) {
+    _bmpLine = ('_bmp_RLEline' filename)
+  } else {
+    _bmpLine = ('[file:readBytes]' (((_bmpWidth * _bmpBPP) + 7) / 8) filename)
+  }
+  if (_bmpBPP < 8) {
+    local 'indexes' ('_bmp_line2indexes')
+    _bmpLine = indexes
+  }
+}
+
+to '_bmp_readPalette' filename {
+  for i (size _bmpPalette) {
+    local 'data' ('[file:readBytes]' 4 filename)
+    local 'color' (((at 3 data) << 16) | (((at 2 data) << 8) | (at 1 data)))
+    atPut i _bmpPalette color
+  }
+}
+
+to '_bmp_readPixelLine' filename {
+  local 'result' ('[data:makeList]')
+  '_bmp_readLine' filename
+  if (_bmpBPP <= 8) {
+    for i _bmpLine {
+      '[data:addLast]' (at (i + 1) _bmpPalette) result
+    }
+  } else {
+    local 'i' 1
+    repeatUntil ((size result) == _bmpWidth) {
+      if (_bmpBPP == 16) {
+        '[data:addLast]' ('_bmp_16BitPixel' _bmpLine i) result
+      } else {
+        '[data:addLast]' ('_bmp_24BitPixel' _bmpLine i) result
+      }
+      i += (maximum (_bmpBPP / 8) 1)
+    }
+  }
+  '_bmp_alignLineData' filename
+  return result
+}
+
+to drawBMPfile filename originX originY {
+  if ('_bmp_readHeader' filename) {
+    '_bmp_drawBMP' filename originX originY
+    '[file:close]' filename
+  }
+}
+
+
+module Files Data
+author MicroBlocks
+version 1 3 
+description 'Flash file system operations. Currently supports the LittleFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
+
+  spec ' ' '[file:open]' 'open file _' 'str'
+  spec ' ' '[file:close]' 'close file _' 'str'
+  spec ' ' '[file:delete]' 'delete file _' 'str'
+  space
+  spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
+  spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
+  space
+  spec 'r' '[file:endOfFile]' 'end of file _' 'str'
+  spec 'r' '[file:readLine]' 'next line of file _' 'str'
+  spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
+  spec 'r' '[file:readInto]' 'read into _ from file _' 'str str' 'a ByteArray' ''
+  space
+  spec 'r' '[file:readPosition]' 'read position of file _' 'str'
+  spec ' ' '[file:setReadPosition]' 'set read position _ of file _' 'num str' 0 ''
+  spec ' ' 'file_SkipBytes' 'skip _ bytes of file _' 'num str' 4 ''
+  space
+  spec 'r' 'file names' 'file names : in directory _' 'str'
+  spec 'r' '[file:fileSize]' 'size of file _' 'str'
+  spec 'r' '[file:systemInfo]' 'file system info'
+
+to 'file names' dir {
+  '[file:startList]' dir
+  local 'result' ('[data:makeList]')
+  local 'fileName' ('[file:nextInList]')
+  repeatUntil (fileName == '') {
+    '[data:addLast]' fileName result
+    fileName = ('[file:nextInList]')
+  }
+  return result
+}
+
+to file_SkipBytes offset file {
+  local 'newPosition' (('[file:readPosition]' file) + offset)
+  '[file:setReadPosition]' newPosition file
+}
+
+
+module TFT Output
+author MicroBlocks
+version 1 5 
+description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
+
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  space
+  spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+  spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+  spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+  spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+  spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
+  space
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'makeGray' 'gray _ %' 'num' 50
+  spec 'r' 'randomColor' 'random color'
+  space
+  spec 'r' '[tft:getWidth]' 'TFT width'
+  spec 'r' '[tft:getHeight]' 'TFT height'
+  space
+  spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  space
+  spec ' ' '_deferMonochromeDisplayUpdates' '_defer monochrome display updates'
+  spec ' ' '_resumeMonochromeDisplayUpdates' '_resume monochrome display updates'
+
+to '_deferMonochromeDisplayUpdates' {
+  '[tft:deferUpdates]'
+}
+
+to '_resumeMonochromeDisplayUpdates' {
+  '[tft:resumeUpdates]'
+}
+
+to makeColor r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to makeGray percent {
+  gray = ((percent * 255) / 100)
+  gray = (maximum 0 (minimum gray 255))
+  return ((gray << 16) | ((gray << 8) | gray))
+}
+
+to randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
